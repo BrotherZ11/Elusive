@@ -1,0 +1,24 @@
+%YAML 1.1
+---
+vars:
+  address-groups:
+    HOME_NET: "[172.30.0.0/16]"
+
+default-rule-path: /var/lib/suricata/rules
+rule-files:
+  - suricata.rules
+
+afsm:
+  request-body-limit: 1mb
+
+outputs:
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: /var/log/suricata/eve.json
+      types:
+        - alert
+        - dns
+        - http
+        - tls
+        - flow
