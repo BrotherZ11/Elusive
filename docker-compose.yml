@@ -1,0 +1,267 @@
+version: "3.9"
+
+name: elusive-soc
+
+services:
+  edge-firewall:
+    image: ghcr.io/nicolaka/netshoot:latest
+    container_name: edge-firewall
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    command: >
+      sh -c "
+      sysctl -w net.ipv4.ip_forward=1 &&
+      iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE &&
+      sleep infinity
+      "
+    networks:
+      wan_net:
+        ipv4_address: 172.30.0.2
+      dmz_net:
+        ipv4_address: 172.30.10.1
+
+  idps:
+    image: jasonish/suricata:latest
+    container_name: idps
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./config/suricata/suricata.yaml:/etc/suricata/suricata.yaml:ro
+      - suricata-logs:/var/log/suricata
+    command: ["-i", "eth0", "-c", "/etc/suricata/suricata.yaml"]
+    depends_on:
+      - edge-firewall
+    networks:
+      dmz_net:
+        ipv4_address: 172.30.10.10
+
+  ldap:
+    image: osixia/openldap:1.5.0
+    container_name: ldap
+    environment:
+      LDAP_ORGANISATION: "Elusive Corp"
+      LDAP_DOMAIN: "elusive.local"
+      LDAP_ADMIN_PASSWORD: "ChangeMeLDAP!"
+    volumes:
+      - ldap-data:/var/lib/ldap
+      - ldap-config:/etc/ldap/slapd.d
+    networks:
+      dmz_net:
+        ipv4_address: 172.30.10.20
+
+  bastion:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: bastion
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: "UTC"
+      USER_NAME: socadmin
+      USER_PASSWORD: "ChangeMeSSH!"
+      PASSWORD_ACCESS: "true"
+      SUDO_ACCESS: "true"
+    depends_on:
+      - ldap
+    ports:
+      - "2222:2222"
+    networks:
+      dmz_net:
+        ipv4_address: 172.30.10.21
+      corp_net:
+        ipv4_address: 172.30.20.21
+
+  web:
+    image: nginx:stable
+    container_name: web
+    volumes:
+      - ./config/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./web:/usr/share/nginx/html:ro
+    networks:
+      dmz_net:
+        ipv4_address: 172.30.10.30
+    ports:
+      - "8080:80"
+
+  honeypot:
+    image: ghcr.io/cowrie/cowrie:latest
+    container_name: honeypot
+    networks:
+      dmz_net:
+        ipv4_address: 172.30.10.40
+    ports:
+      - "2223:2222"
+
+  internal-router:
+    image: ghcr.io/nicolaka/netshoot:latest
+    container_name: internal-router
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    command: >
+      sh -c "
+      sysctl -w net.ipv4.ip_forward=1 &&
+      iptables -P FORWARD DROP &&
+      iptables -A FORWARD -s 172.30.20.0/24 -d 172.30.30.0/24 -p tcp --dport 5044 -j ACCEPT &&
+      iptables -A FORWARD -s 172.30.20.0/24 -d 172.30.30.0/24 -p tcp --dport 9200 -j ACCEPT &&
+      iptables -A FORWARD -s 172.30.30.0/24 -d 172.30.20.0/24 -m state --state ESTABLISHED,RELATED -j ACCEPT &&
+      sleep infinity
+      "
+    networks:
+      corp_net:
+        ipv4_address: 172.30.20.1
+      soc_net:
+        ipv4_address: 172.30.30.1
+
+  xdr-collector:
+    image: wazuh/wazuh-manager:4.10.3
+    container_name: xdr-collector
+    environment:
+      API_USERNAME: "wazuh-api"
+      API_PASSWORD: "ChangeMeWazuh!"
+    volumes:
+      - wazuh-manager-data:/var/ossec/data
+      - wazuh-manager-logs:/var/ossec/logs
+    ports:
+      - "1514:1514/udp"
+      - "1515:1515"
+      - "55000:55000"
+    networks:
+      soc_net:
+        ipv4_address: 172.30.30.10
+
+  siem:
+    image: opensearchproject/opensearch:2.13.0
+    container_name: siem
+    environment:
+      discovery.type: single-node
+      plugins.security.disabled: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms1g -Xmx1g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    networks:
+      soc_net:
+        ipv4_address: 172.30.30.20
+
+  wazuh-forwarder:
+    image: docker.elastic.co/beats/filebeat:8.13.4
+    container_name: wazuh-forwarder
+    user: root
+    depends_on:
+      - xdr-collector
+      - siem
+    volumes:
+      - ./config/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - wazuh-manager-logs:/var/ossec/logs:ro
+    command: ["filebeat", "-e", "-strict.perms=false"]
+    networks:
+      soc_net:
+        ipv4_address: 172.30.30.30
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ChangeMeGrafana!
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - siem
+    ports:
+      - "3000:3000"
+    networks:
+      soc_net:
+        ipv4_address: 172.30.30.40
+
+  ai-agent:
+    image: ollama/ollama:latest
+    container_name: ai-agent
+    volumes:
+      - ollama-data:/root/.ollama
+    ports:
+      - "11434:11434"
+    networks:
+      soc_net:
+        ipv4_address: 172.30.30.50
+
+  endpoint-01:
+    image: opennix/wazuh-agent:latest
+    container_name: endpoint-01
+    environment:
+      WAZUH_MANAGER: xdr-collector
+      WAZUH_AGENT_NAME: endpoint-01
+      WAZUH_REGISTRATION_SERVER: xdr-collector
+    depends_on:
+      - xdr-collector
+    networks:
+      corp_net:
+        ipv4_address: 172.30.20.101
+
+  endpoint-02:
+    image: opennix/wazuh-agent:latest
+    container_name: endpoint-02
+    environment:
+      WAZUH_MANAGER: xdr-collector
+      WAZUH_AGENT_NAME: endpoint-02
+      WAZUH_REGISTRATION_SERVER: xdr-collector
+    depends_on:
+      - xdr-collector
+    networks:
+      corp_net:
+        ipv4_address: 172.30.20.102
+
+  database:
+    image: postgres:16
+    container_name: database
+    environment:
+      POSTGRES_DB: corpapp
+      POSTGRES_USER: corpapp
+      POSTGRES_PASSWORD: ChangeMeDB!
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      corp_net:
+        ipv4_address: 172.30.20.110
+
+volumes:
+  ldap-data:
+  ldap-config:
+  suricata-logs:
+  wazuh-manager-data:
+  wazuh-manager-logs:
+  opensearch-data:
+  grafana-data:
+  ollama-data:
+  db-data:
+
+networks:
+  wan_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+  dmz_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.10.0/24
+  corp_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.20.0/24
+  soc_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.30.0/24
