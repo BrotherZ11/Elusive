@@ -1,0 +1,7 @@
+<!-- Local decoders for lab services -->
+
+<decoder name="endpoint-ssh-preauth">
+    <prematch>Connection closed by authenticating user</prematch>
+    <regex>\.+Connection closed by authenticating user (\S+) (\S+) port (\d+) \.+preauth\.+</regex>
+    <order>user,srcip,srcport</order>
+</decoder>
