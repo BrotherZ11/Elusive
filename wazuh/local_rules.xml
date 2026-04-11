@@ -1,8 +1,8 @@
-<group name="topology,suricata,">
+<group name="lab,suricata,">
   <rule id="100100" level="8">
     <decoded_as>json</decoded_as>
     <field name="event_type">alert</field>
-    <description>Topology Suricata alert detected in IPS sensor.</description>
+    <description>Lab Suricata alert detected in IPS sensor.</description>
     <options>no_full_log</options>
     <group>ids,suricata,dmz,</group>
   </rule>
@@ -29,7 +29,16 @@
   </rule>
 </group>
 
-<group name="topology,agenteia,">
+<group name="lab,proxy,">
+  <rule id="100121" level="12" frequency="4" timeframe="60" ignore="120">
+    <if_matched_sid>31103</if_matched_sid>
+    <same_source_ip />
+    <description>Repeated SQL injection attempts detected from $(srcip). Active response will block the source IP on the firewall.</description>
+    <group>attack,web,dmz,firewall,active_response,</group>
+  </rule>
+</group>
+
+<group name="lab,agenteia,">
   <rule id="100110" level="5">
     <decoded_as>json</decoded_as>
     <field name="service">Elusive SOC Assistant</field>

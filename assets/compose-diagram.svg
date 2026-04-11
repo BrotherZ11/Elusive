@@ -15,7 +15,7 @@
   </defs>
 
   <rect x="0" y="0" width="1600" height="980" fill="#f1f5f9"/>
-  <text x="800" y="48" text-anchor="middle" class="title">Elusive Topology Docker Compose</text>
+  <text x="800" y="48" text-anchor="middle" class="title">Elusive Lab Docker Compose</text>
   <text x="800" y="78" text-anchor="middle" class="subtitle">Servicios, zonas de red e imagen Docker usada por cada nodo</text>
 
   <rect x="620" y="95" width="360" height="110" class="zone"/>
@@ -137,5 +137,5 @@
   <circle cx="1395" cy="730" r="6" class="dot"/>
 
   <rect x="70" y="915" width="1460" height="42" rx="14" ry="14" fill="#e2e8f0"/>
-  <text x="800" y="942" text-anchor="middle" class="small">Archivo generado desde docker-compose.topology.yml | Diagrama editable en SVG</text>
+  <text x="800" y="942" text-anchor="middle" class="small">Archivo generado desde docker-compose.lab.yml | Diagrama editable en SVG</text>
 </svg>
