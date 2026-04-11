@@ -1,0 +1,46 @@
+<group name="topology,suricata,">
+  <rule id="100100" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="event_type">alert</field>
+    <description>Topology Suricata alert detected in IPS sensor.</description>
+    <options>no_full_log</options>
+    <group>ids,suricata,dmz,</group>
+  </rule>
+
+  <rule id="100101" level="10">
+    <if_sid>100100</if_sid>
+    <field name="alert.signature">ELUSIVE possible SQLi probe against DVWA</field>
+    <description>Potential SQL injection probe against the DMZ web service.</description>
+    <group>web,attack,dmz,</group>
+  </rule>
+
+  <rule id="100102" level="9">
+    <if_sid>100100</if_sid>
+    <field name="alert.signature">ELUSIVE honeypot SSH interaction</field>
+    <description>SSH interaction observed against the honeypot in the DMZ.</description>
+    <group>honeypot,ssh,dmz,</group>
+  </rule>
+
+  <rule id="100103" level="7">
+    <if_sid>100100</if_sid>
+    <field name="alert.signature">ELUSIVE LDAP access in DMZ</field>
+    <description>LDAP access observed in the DMZ.</description>
+    <group>ldap,dmz,</group>
+  </rule>
+</group>
+
+<group name="topology,agenteia,">
+  <rule id="100110" level="5">
+    <decoded_as>json</decoded_as>
+    <field name="service">Elusive SOC Assistant</field>
+    <description>AgenteIA service event registered.</description>
+    <group>application,agenteia,</group>
+  </rule>
+
+  <rule id="100111" level="6">
+    <if_sid>100110</if_sid>
+    <field name="path">/ask</field>
+    <description>AgenteIA received a request on /ask.</description>
+    <group>application,agenteia,api,</group>
+  </rule>
+</group>
