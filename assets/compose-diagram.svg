@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1225" viewBox="0 0 1800 1225">
+  <defs>
+    <style>
+      .title { font: 700 40px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 500 20px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .zoneTitle { font: 700 28px 'Segoe UI', Arial, sans-serif; fill: #0f172a; letter-spacing: 1px; }
+      .nodeTitle { font: 700 22px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .body { font: 500 16px 'Segoe UI', Arial, sans-serif; fill: #334155; }
+      .mono { font: 500 15px 'Consolas', 'Courier New', monospace; fill: #475569; }
+      .note { font: 500 14px 'Segoe UI', Arial, sans-serif; fill: #64748b; }
+      .zoneEdge { stroke: #cbd5e1; stroke-width: 2; }
+      .service { fill: #ffffff; stroke: #94a3b8; stroke-width: 2; }
+      .core { fill: #f8fafc; stroke: #64748b; stroke-width: 2.5; }
+      .wazuh { fill: #eff6ff; stroke: #3b82f6; stroke-width: 2.5; }
+      .agent { fill: #ecfeff; stroke: #14b8a6; stroke-width: 1.8; }
+      .footer { fill: #e2e8f0; }
+    </style>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#eef2ff"/>
+    </linearGradient>
+    <linearGradient id="edgeBg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#fff7ed"/>
+      <stop offset="100%" stop-color="#ffedd5"/>
+    </linearGradient>
+    <linearGradient id="dmzBg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f0fdf4"/>
+      <stop offset="100%" stop-color="#dcfce7"/>
+    </linearGradient>
+    <linearGradient id="backendBg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#eff6ff"/>
+      <stop offset="100%" stop-color="#dbeafe"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1800" height="1225" fill="url(#bg)"/>
+
+  <text x="900" y="52" text-anchor="middle" class="title">Elusive Lab Docker Compose</text>
+  <text x="900" y="84" text-anchor="middle" class="subtitle">Diagrama actualizado desde docker-compose.lab.yml con zonas, dependencias y agentes Wazuh</text>
+
+  <rect x="48" y="124" width="1704" height="220" rx="34" ry="34" fill="url(#edgeBg)" class="zoneEdge"/>
+  <text x="900" y="165" text-anchor="middle" class="zoneTitle">EDGE 172.30.0.0/24</text>
+
+  <rect x="94" y="384" width="1612" height="312" rx="34" ry="34" fill="url(#dmzBg)" class="zoneEdge"/>
+  <text x="900" y="427" text-anchor="middle" class="zoneTitle">DMZ 172.31.0.0/24</text>
+
+  <rect x="48" y="734" width="1704" height="410" rx="34" ry="34" fill="url(#backendBg)" class="zoneEdge"/>
+  <text x="900" y="777" text-anchor="middle" class="zoneTitle">BACKEND 172.32.0.0/24</text>
+
+  <rect x="190" y="186" width="320" height="104" rx="24" ry="24" class="service"/>
+  <text x="350" y="222" text-anchor="middle" class="nodeTitle">attacker</text>
+  <text x="350" y="248" text-anchor="middle" class="body">image: nicolaka/netshoot:latest</text>
+  <text x="350" y="272" text-anchor="middle" class="mono">edge 172.30.0.20</text>
+
+  <rect x="740" y="170" width="320" height="120" rx="24" ry="24" class="core"/>
+  <text x="900" y="206" text-anchor="middle" class="nodeTitle">firewall</text>
+  <text x="900" y="232" text-anchor="middle" class="body">image: nicolaka/netshoot:latest</text>
+  <text x="900" y="256" text-anchor="middle" class="mono">edge 172.30.0.2 | dmz 172.31.0.2</text>
+  <text x="900" y="278" text-anchor="middle" class="mono">backend 172.32.0.254</text>
+  <rect x="825" y="298" width="150" height="30" rx="15" ry="15" class="agent"/>
+  <text x="900" y="318" text-anchor="middle" class="note">firewall.agent</text>
+
+  <rect x="1290" y="186" width="320" height="104" rx="24" ry="24" class="service"/>
+  <text x="1450" y="222" text-anchor="middle" class="nodeTitle">nat1</text>
+  <text x="1450" y="248" text-anchor="middle" class="body">image: alpine:3.20</text>
+  <text x="1450" y="272" text-anchor="middle" class="mono">edge 172.30.0.10</text>
+
+  <rect x="134" y="466" width="286" height="116" rx="24" ry="24" class="service"/>
+  <text x="277" y="504" text-anchor="middle" class="nodeTitle">web</text>
+  <text x="277" y="530" text-anchor="middle" class="body">image: vulnerables/web-dvwa:latest</text>
+  <text x="277" y="554" text-anchor="middle" class="mono">dmz 172.31.0.20 | backend 172.32.0.22</text>
+  <rect x="204" y="592" width="146" height="30" rx="15" ry="15" class="agent"/>
+  <text x="277" y="612" text-anchor="middle" class="note">web.agent</text>
+
+  <rect x="454" y="466" width="286" height="104" rx="24" ry="24" class="service"/>
+  <text x="597" y="504" text-anchor="middle" class="nodeTitle">ldap</text>
+  <text x="597" y="530" text-anchor="middle" class="body">image: osixia/openldap:1.5.0</text>
+  <text x="597" y="554" text-anchor="middle" class="mono">dmz 172.31.0.30</text>
+
+  <rect x="774" y="450" width="286" height="120" rx="24" ry="24" class="core"/>
+  <text x="917" y="486" text-anchor="middle" class="nodeTitle">ips</text>
+  <text x="917" y="512" text-anchor="middle" class="body">image: jasonish/suricata:7.0</text>
+  <text x="917" y="536" text-anchor="middle" class="mono">dmz 172.31.0.10 | backend 172.32.0.10</text>
+  <rect x="842" y="580" width="150" height="30" rx="15" ry="15" class="agent"/>
+  <text x="917" y="600" text-anchor="middle" class="note">ips.agent</text>
+
+  <rect x="1094" y="466" width="286" height="116" rx="24" ry="24" class="service"/>
+  <text x="1237" y="504" text-anchor="middle" class="nodeTitle">honeypot</text>
+  <text x="1237" y="530" text-anchor="middle" class="body">image: cowrie/cowrie:latest</text>
+  <text x="1237" y="554" text-anchor="middle" class="mono">dmz 172.31.0.40 | ports 2225/2226</text>
+  <rect x="1164" y="592" width="146" height="30" rx="15" ry="15" class="agent"/>
+  <text x="1237" y="612" text-anchor="middle" class="note">honeypot.agent</text>
+
+  <rect x="1414" y="450" width="246" height="120" rx="24" ry="24" class="core"/>
+  <text x="1537" y="486" text-anchor="middle" class="nodeTitle">proxy</text>
+  <text x="1537" y="512" text-anchor="middle" class="body">image: nginx:1.27-alpine</text>
+  <text x="1537" y="536" text-anchor="middle" class="mono">dmz 172.31.0.50 | backend 172.32.0.50</text>
+  <text x="1537" y="558" text-anchor="middle" class="note">ports 8088, 5602, 3001, 8001</text>
+  <rect x="1462" y="580" width="150" height="30" rx="15" ry="15" class="agent"/>
+  <text x="1537" y="600" text-anchor="middle" class="note">proxy.agent</text>
+
+  <rect x="108" y="834" width="250" height="104" rx="24" ry="24" class="service"/>
+  <text x="233" y="870" text-anchor="middle" class="nodeTitle">logs</text>
+  <text x="233" y="896" text-anchor="middle" class="body">image: grafana/loki:2.9.8</text>
+  <text x="233" y="920" text-anchor="middle" class="mono">backend 172.32.0.20</text>
+
+  <rect x="398" y="834" width="286" height="104" rx="24" ry="24" class="service"/>
+  <text x="541" y="870" text-anchor="middle" class="nodeTitle">dmz.forwarder</text>
+  <text x="541" y="896" text-anchor="middle" class="body">image: fluent-bit:3.0</text>
+  <text x="541" y="920" text-anchor="middle" class="mono">backend 172.32.0.21</text>
+
+  <rect x="724" y="834" width="250" height="104" rx="24" ry="24" class="service"/>
+  <text x="849" y="870" text-anchor="middle" class="nodeTitle">grafana</text>
+  <text x="849" y="896" text-anchor="middle" class="body">image: grafana/grafana-oss:10.4.3</text>
+  <text x="849" y="920" text-anchor="middle" class="mono">backend 172.32.0.30</text>
+
+  <rect x="1014" y="834" width="250" height="118" rx="24" ry="24" class="service"/>
+  <text x="1139" y="870" text-anchor="middle" class="nodeTitle">agenteia</text>
+  <text x="1139" y="896" text-anchor="middle" class="body">image: python:3.11-slim</text>
+  <text x="1139" y="920" text-anchor="middle" class="mono">backend 172.32.0.40</text>
+  <rect x="1066" y="962" width="146" height="30" rx="15" ry="15" class="agent"/>
+  <text x="1139" y="982" text-anchor="middle" class="note">agenteia.agent</text>
+
+  <rect x="1304" y="834" width="250" height="104" rx="24" ry="24" class="service"/>
+  <text x="1429" y="870" text-anchor="middle" class="nodeTitle">database</text>
+  <text x="1429" y="896" text-anchor="middle" class="body">image: postgres:16-alpine</text>
+  <text x="1429" y="920" text-anchor="middle" class="mono">backend 172.32.0.60</text>
+
+  <rect x="1394" y="804" width="278" height="112" rx="24" ry="24" class="wazuh"/>
+  <text x="1533" y="840" text-anchor="middle" class="nodeTitle">wazuh.manager</text>
+  <text x="1533" y="866" text-anchor="middle" class="body">image: wazuh/wazuh-manager:4.14.4</text>
+  <text x="1533" y="890" text-anchor="middle" class="mono">backend 172.32.0.70</text>
+
+  <rect x="1394" y="934" width="278" height="104" rx="24" ry="24" class="wazuh"/>
+  <text x="1533" y="970" text-anchor="middle" class="nodeTitle">wazuh.indexer</text>
+  <text x="1533" y="996" text-anchor="middle" class="body">image: wazuh/wazuh-indexer:4.14.4</text>
+  <text x="1533" y="1020" text-anchor="middle" class="mono">backend 172.32.0.71</text>
+
+  <rect x="1394" y="1054" width="278" height="104" rx="24" ry="24" class="wazuh"/>
+  <text x="1533" y="1090" text-anchor="middle" class="nodeTitle">wazuh.dashboard</text>
+  <text x="1533" y="1116" text-anchor="middle" class="body">image: wazuh/wazuh-dashboard:4.14.4</text>
+  <text x="1533" y="1140" text-anchor="middle" class="mono">backend 172.32.0.72</text>
+
+  <rect x="84" y="1048" width="1180" height="82" rx="22" ry="22" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="114" y="1080" class="body">Lectura rapida:</text>
+  <text x="244" y="1080" class="note">la posicion vertical indica la zona de red del servicio</text>
+  <text x="114" y="1106" class="note">las pastillas verdes identifican los agentes Wazuh desplegados junto a cada nodo</text>
+  <text x="684" y="1080" class="note">servicio con borde gris intenso = nodo puente entre zonas</text>
+  <text x="684" y="1106" class="note">los bloques azules agrupan el stack Wazuh en backend</text>
+
+  <rect x="48" y="1172" width="1704" height="32" rx="16" ry="16" class="footer"/>
+  <text x="900" y="1193" text-anchor="middle" class="note">Archivo editable en SVG | Refleja la version actual de docker-compose.lab.yml</text>
+</svg>

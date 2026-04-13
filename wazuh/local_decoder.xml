@@ -1,0 +1,30 @@
+<!-- Lab-specific local decoders -->
+
+<decoder name="lab-agenteia-json">
+  <prematch>"service":"Elusive SOC Assistant"</prematch>
+</decoder>
+
+<decoder name="lab-cowrie-json">
+  <prematch>"eventid":"cowrie.</prematch>
+</decoder>
+
+<decoder name="lab-cowrie-login-failed">
+  <parent>lab-cowrie-json</parent>
+  <prematch>"eventid":"cowrie.login.failed"</prematch>
+  <regex>"eventid":"([^"]+)".*"username":"([^"]+)".*"password":"([^"]+)".*"src_ip":"([^"]+)"</regex>
+  <order>eventid,username,password,srcip</order>
+</decoder>
+
+<decoder name="lab-cowrie-login-success">
+  <parent>lab-cowrie-json</parent>
+  <prematch>"eventid":"cowrie.login.success"</prematch>
+  <regex>"eventid":"([^"]+)".*"username":"([^"]+)".*"password":"([^"]*)".*"src_ip":"([^"]+)"</regex>
+  <order>eventid,username,password,srcip</order>
+</decoder>
+
+<decoder name="lab-cowrie-session-connect">
+  <parent>lab-cowrie-json</parent>
+  <prematch>"eventid":"cowrie.session.connect"</prematch>
+  <regex>"eventid":"([^"]+)".*"src_ip":"([^"]+)".*"dst_port":([0-9]+).*</regex>
+  <order>eventid,srcip,dstport</order>
+</decoder>

@@ -1,0 +1,9 @@
+<!-- Local rules for lab services -->
+
+<group name="local,sshd,endpoint,">
+  <rule id="100010" level="7">
+    <decoded_as>endpoint-ssh-preauth</decoded_as>
+    <description>Endpoint SSH authentication attempt closed during preauth.</description>
+    <group>authentication_failed,ssh,</group>
+  </rule>
+</group>

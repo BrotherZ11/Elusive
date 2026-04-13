@@ -1,0 +1,8 @@
+alert http any any -> 172.31.0.20 any (msg:"ELUSIVE DMZ WEB access"; flow:to_server,established; sid:1001001; rev:1;)
+alert http any any -> 172.31.0.20 any (msg:"ELUSIVE possible SQLi probe against DVWA"; flow:to_server,established; http.uri; content:"union"; nocase; http.uri; content:"select"; nocase; distance:0; sid:1001002; rev:1;)
+alert http any any -> 172.31.0.20 any (msg:"ELUSIVE possible path traversal probe against DVWA"; flow:to_server,established; http.uri; content:"../"; nocase; sid:1001003; rev:1;)
+alert tcp any any -> 172.31.0.30 389 (msg:"ELUSIVE LDAP access in DMZ"; flow:to_server,established; sid:1001004; rev:1;)
+alert tcp any any -> 172.31.0.30 389 (msg:"ELUSIVE LDAP honeytoken touched (SOC-admin)"; flow:to_server,established; content:"cn=SOC-admin,ou=tokens,dc=elusive,dc=lab"; nocase; sid:1001008; rev:1;)
+alert tcp any any -> 172.31.0.40 2222 (msg:"ELUSIVE honeypot SSH interaction"; flow:to_server,established; sid:1001005; rev:1;)
+alert tcp any any -> 172.31.0.40 2223 (msg:"ELUSIVE honeypot Telnet interaction"; flow:to_server,established; sid:1001006; rev:1;)
+alert ip 172.31.0.0/24 any -> 172.32.0.0/24 any (msg:"ELUSIVE DMZ to backend east-west traffic"; sid:1001007; rev:1;)

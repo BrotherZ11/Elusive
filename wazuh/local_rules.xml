@@ -1,0 +1,127 @@
+<group name="lab,suricata,">
+  <rule id="100100" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="event_type">alert</field>
+    <description>Lab Suricata alert detected in IPS sensor.</description>
+    <options>no_full_log</options>
+    <group>ids,suricata,dmz,</group>
+  </rule>
+
+  <rule id="100101" level="10">
+    <if_sid>100100</if_sid>
+    <field name="alert.signature">ELUSIVE possible SQLi probe against DVWA</field>
+    <description>Potential SQL injection probe against the DMZ web service.</description>
+    <group>web,attack,dmz,</group>
+  </rule>
+
+  <rule id="100102" level="9">
+    <if_sid>100100</if_sid>
+    <field name="alert.signature">ELUSIVE honeypot SSH interaction</field>
+    <description>SSH interaction observed against the honeypot in the DMZ.</description>
+    <group>honeypot,ssh,dmz,</group>
+  </rule>
+
+  <rule id="100103" level="7">
+    <if_sid>100100</if_sid>
+    <field name="alert.signature">ELUSIVE LDAP access in DMZ</field>
+    <description>LDAP access observed in the DMZ.</description>
+    <group>ldap,dmz,</group>
+  </rule>
+
+  <rule id="100104" level="13">
+    <if_sid>100100</if_sid>
+    <field name="alert.signature">ELUSIVE LDAP honeytoken touched (SOC-admin)</field>
+    <description>LDAP honeytoken account was queried or used. Treat source as hostile.</description>
+    <group>ldap,honeytoken,dmz,attack,</group>
+  </rule>
+
+  <rule id="100105" level="13">
+    <decoded_as>json</decoded_as>
+    <field name="service">ldap-honeytoken</field>
+    <description>LDAP honeytoken account was queried or used. Treat source as hostile.</description>
+    <group>ldap,honeytoken,dmz,attack,</group>
+  </rule>
+
+  <rule id="100106" level="10">
+    <decoded_as>json</decoded_as>
+    <field name="service">cowrie</field>
+    <field name="eventid">cowrie.login.failed</field>
+    <description>Failed SSH authentication attempt observed by Cowrie from $(srcip) using user $(username).</description>
+    <group>honeypot,ssh,bruteforce,dmz,attack,</group>
+  </rule>
+
+  <rule id="100107" level="11">
+    <decoded_as>json</decoded_as>
+    <field name="service">cowrie</field>
+    <field name="eventid">cowrie.login.success</field>
+    <description>Successful SSH login observed by Cowrie from $(srcip) using user $(username).</description>
+    <group>honeypot,ssh,compromise,dmz,attack,</group>
+  </rule>
+
+  <rule id="100108" level="7">
+    <decoded_as>json</decoded_as>
+    <field name="service">cowrie</field>
+    <field name="eventid">cowrie.session.connect</field>
+    <description>SSH connection attempt observed by Cowrie from $(srcip).</description>
+    <group>honeypot,ssh,dmz,attack,</group>
+  </rule>
+</group>
+
+<group name="lab,proxy,">
+  <rule id="100121" level="12" frequency="4" timeframe="60">
+    <if_matched_sid>31103</if_matched_sid>
+    <same_source_ip />
+    <description>Repeated SQL injection attempts detected from $(srcip). Active response will block the source IP on the firewall.</description>
+    <group>attack,web,dmz,firewall,active_response,</group>
+  </rule>
+
+  <rule id="100131" level="14" frequency="2" timeframe="120">
+    <if_matched_sid>100105</if_matched_sid>
+    <same_source_ip />
+    <description>Repeated LDAP honeytoken interactions from $(srcip). Active defense will block the source IP on the firewall.</description>
+    <group>attack,ldap,honeytoken,dmz,firewall,active_response,</group>
+  </rule>
+
+  <rule id="100132" level="13" frequency="6" timeframe="90">
+    <if_matched_sid>100100</if_matched_sid>
+    <same_source_ip />
+    <description>Anomalous burst of IDS alerts from $(srcip) across DMZ services. Active defense will block the source IP on the firewall.</description>
+    <group>anomaly,ids,dmz,firewall,active_response,</group>
+  </rule>
+
+  <rule id="100133" level="14" frequency="4" timeframe="120">
+    <if_matched_sid>100106</if_matched_sid>
+    <same_source_ip />
+    <description>Repeated failed SSH logins detected from $(srcip) against the honeypot. Active defense will block the source IP on the firewall.</description>
+    <group>attack,honeypot,ssh,bruteforce,dmz,firewall,active_response,</group>
+  </rule>
+
+  <rule id="100134" level="13" frequency="6" timeframe="120">
+    <if_matched_sid>100108</if_matched_sid>
+    <same_source_ip />
+    <description>Repeated SSH connection attempts detected from $(srcip) against the honeypot. Active defense will block the source IP on the firewall.</description>
+    <group>attack,honeypot,ssh,bruteforce,dmz,firewall,active_response,</group>
+  </rule>
+
+  <rule id="100135" level="15">
+    <if_sid>100107</if_sid>
+    <description>Successful SSH access detected from $(srcip) against the honeypot. Active defense will block the source IP on the firewall.</description>
+    <group>attack,honeypot,ssh,compromise,dmz,firewall,active_response,</group>
+  </rule>
+</group>
+
+<group name="lab,agenteia,">
+  <rule id="100110" level="5">
+    <decoded_as>json</decoded_as>
+    <field name="service">Elusive SOC Assistant</field>
+    <description>AgenteIA service event registered.</description>
+    <group>application,agenteia,</group>
+  </rule>
+
+  <rule id="100111" level="6">
+    <if_sid>100110</if_sid>
+    <field name="path">/ask</field>
+    <description>AgenteIA received a request on /ask.</description>
+    <group>application,agenteia,api,</group>
+  </rule>
+</group>

@@ -1,0 +1,542 @@
+name: elusive-lab
+
+services:
+  nat1:
+    image: alpine:3.20
+    command: ["sh", "-c", "while true; do sleep 3600; done"]
+    restart: unless-stopped
+    networks:
+      edge:
+        ipv4_address: 172.30.0.10
+
+  firewall:
+    image: nicolaka/netshoot:latest
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    security_opt:
+      - no-new-privileges:true
+    sysctls:
+      net.ipv4.ip_forward: "1"
+    command: ["sh", "/opt/lab/firewall/init.sh"]
+    volumes:
+      - ./firewall/init.sh:/opt/lab/firewall/init.sh:ro
+    restart: unless-stopped
+    networks:
+      edge:
+        ipv4_address: 172.30.0.2
+      dmz:
+        ipv4_address: 172.31.0.2
+      backend:
+        ipv4_address: 172.32.0.254
+
+  attacker:
+    image: nicolaka/netshoot:latest
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    security_opt:
+      - no-new-privileges:true
+    command: ["sh", "/opt/lab/attacker/init.sh"]
+    volumes:
+      - ./attacker/init.sh:/opt/lab/attacker/init.sh:ro
+    restart: unless-stopped
+    networks:
+      edge:
+        ipv4_address: 172.30.0.20
+
+  ips:
+    image: jasonish/suricata:7.0
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    security_opt:
+      - no-new-privileges:true
+    command:
+      - suricata
+      - -i
+      - eth0
+      - -i
+      - eth1
+      - -c
+      - /etc/suricata/suricata.yaml
+      - -vv
+    volumes:
+      - ./ips/suricata.yaml:/etc/suricata/suricata.yaml:ro
+      - ./ips/rules:/var/lib/suricata/rules:ro
+      - ips_logs:/var/log/suricata
+    restart: unless-stopped
+    networks:
+      dmz:
+        ipv4_address: 172.31.0.10
+      backend:
+        ipv4_address: 172.32.0.10
+
+  web:
+    image: vulnerables/web-dvwa:latest
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    volumes:
+      - web_logs:/var/log/apache2
+    networks:
+      dmz:
+        ipv4_address: 172.31.0.20
+      backend:
+        ipv4_address: 172.32.0.22
+
+  ldap:
+    build:
+      context: ./ldap
+    entrypoint: ["sh", "/opt/lab/ldap/start.sh"]
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      LDAP_ORGANISATION: Elusive Lab
+      LDAP_DOMAIN: elusive.lab
+      LDAP_ADMIN_PASSWORD: admin123
+      LDAP_TLS: "false"
+    restart: unless-stopped
+    volumes:
+      - ldap_data:/var/lib/ldap
+      - ldap_config:/etc/ldap/slapd.d
+      - ldap_logs:/var/log/ldap
+    networks:
+      dmz:
+        ipv4_address: 172.31.0.30
+
+  honeypot:
+    image: cowrie/cowrie:latest
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    ports:
+      - "2225:2222"
+      - "2226:2223"
+    volumes:
+      - honeypot_logs:/cowrie/cowrie-git/var/log/cowrie
+    networks:
+      dmz:
+        ipv4_address: 172.31.0.40
+
+  proxy:
+    image: nginx:1.27-alpine
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - web
+      - wazuh.dashboard
+      - grafana
+      - agenteia
+    ports:
+      - "8088:8088"
+      - "5602:5602"
+      - "3001:3001"
+      - "8001:8001"
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./proxy/conf.d:/etc/nginx/conf.d:ro
+      - proxy_logs:/var/log/nginx
+    restart: unless-stopped
+    networks:
+      dmz:
+        ipv4_address: 172.31.0.50
+      backend:
+        ipv4_address: 172.32.0.50
+
+  logs:
+    image: grafana/loki:2.9.8
+    security_opt:
+      - no-new-privileges:true
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    volumes:
+      - ./logs/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    restart: unless-stopped
+    networks:
+      backend:
+        ipv4_address: 172.32.0.20
+
+  dmz.forwarder:
+    image: cr.fluentbit.io/fluent/fluent-bit:3.0
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - logs
+    command:
+      - /fluent-bit/bin/fluent-bit
+      - -c
+      - /fluent-bit/etc/fluent-bit.conf
+    volumes:
+      - ./fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - ./fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf:ro
+      - web_logs:/var/log/apache2:ro
+      - honeypot_logs:/var/log/cowrie:ro
+      - proxy_logs:/var/log/nginx:ro
+      - ips_logs:/var/log/suricata:ro
+      - dmz_forwarder_state:/var/fluent-bit/state
+    restart: unless-stopped
+    networks:
+      backend:
+        ipv4_address: 172.32.0.21
+
+  grafana:
+    image: grafana/grafana-oss:10.4.3
+    depends_on:
+      - logs
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: SecretPassword
+      GF_SERVER_HTTP_PORT: "3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
+    networks:
+      backend:
+        ipv4_address: 172.32.0.30
+
+  agenteia:
+    image: python:3.11-slim
+    security_opt:
+      - no-new-privileges:true
+    command: ["python", "/app/app.py"]
+    environment:
+      AGENTEIA_NAME: Elusive SOC Assistant
+      AGENTEIA_LOG_PATH: /var/log/agenteia/app.log
+      DATABASE_HOST: database
+      DATABASE_NAME: elusive
+    volumes:
+      - ./agenteia/app.py:/app/app.py:ro
+      - agenteia_logs:/var/log/agenteia
+    restart: unless-stopped
+    networks:
+      backend:
+        ipv4_address: 172.32.0.40
+
+  database:
+    image: postgres:16-alpine
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      POSTGRES_DB: elusive
+      POSTGRES_USER: elusive
+      POSTGRES_PASSWORD: elusive123
+    volumes:
+      - database_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      backend:
+        ipv4_address: 172.32.0.60
+
+  wazuh.manager:
+    image: wazuh/wazuh-manager:4.14.4
+    hostname: wazuh.manager
+    entrypoint: ["sh", "/opt/lab/wazuh/bootstrap-manager.sh"]
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 655360
+        hard: 655360
+    environment:
+      INDEXER_URL: https://wazuh.indexer:9200
+      INDEXER_USERNAME: admin
+      INDEXER_PASSWORD: SecretPassword
+      FILEBEAT_SSL_VERIFICATION_MODE: full
+      SSL_CERTIFICATE_AUTHORITIES: /etc/ssl/root-ca.pem
+      SSL_CERTIFICATE: /etc/ssl/filebeat.pem
+      SSL_KEY: /etc/ssl/filebeat.key
+      API_USERNAME: wazuh-wui
+      API_PASSWORD: MyS3cr37P450r.*-
+    volumes:
+      - wazuh_api_configuration:/var/ossec/api/configuration
+      - wazuh_etc:/var/ossec/etc
+      - wazuh_logs:/var/ossec/logs
+      - wazuh_queue:/var/ossec/queue
+      - wazuh_var_multigroups:/var/ossec/var/multigroups
+      - wazuh_integrations:/var/ossec/integrations
+      - wazuh_active_response:/var/ossec/active-response/bin
+      - wazuh_agentless:/var/ossec/agentless
+      - wazuh_wodles:/var/ossec/wodles
+      - filebeat_etc:/etc/filebeat
+      - filebeat_var:/var/lib/filebeat
+      - ./config/wazuh_indexer_ssl_certs/root-ca-manager.pem:/etc/ssl/root-ca.pem
+      - ./config/wazuh_indexer_ssl_certs/wazuh.manager.pem:/etc/ssl/filebeat.pem
+      - ./config/wazuh_indexer_ssl_certs/wazuh.manager-key.pem:/etc/ssl/filebeat.key
+      - ./config/wazuh_cluster/wazuh_manager.conf:/wazuh-config-mount/etc/ossec.conf
+      - ./config/wazuh_cluster/client.keys:/opt/lab/wazuh/client.keys:ro
+      - ./wazuh/bootstrap-manager.sh:/opt/lab/wazuh/bootstrap-manager.sh:ro
+      - ./config/wazuh_cluster/local_decoder.xml:/var/ossec/etc/decoders/local_decoder.xml:ro
+      - ./config/wazuh_cluster/local_rules.xml:/var/ossec/etc/rules/local_rules.xml:ro
+      - ./wazuh/local_decoder.xml:/var/ossec/etc/decoders/lab_local_decoder.xml:ro
+      - ./wazuh/local_rules.xml:/var/ossec/etc/rules/lab_local_rules.xml:ro
+    networks:
+      backend:
+        ipv4_address: 172.32.0.70
+
+  wazuh.indexer:
+    image: wazuh/wazuh-indexer:4.14.4
+    hostname: wazuh.indexer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      OPENSEARCH_JAVA_OPTS: -Xms1g -Xmx1g
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - wazuh-indexer-data:/var/lib/wazuh-indexer
+      - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
+      - ./config/wazuh_indexer_ssl_certs/wazuh.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/wazuh.indexer.key
+      - ./config/wazuh_indexer_ssl_certs/wazuh.indexer.pem:/usr/share/wazuh-indexer/config/certs/wazuh.indexer.pem
+      - ./config/wazuh_indexer_ssl_certs/admin.pem:/usr/share/wazuh-indexer/config/certs/admin.pem
+      - ./config/wazuh_indexer_ssl_certs/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
+      - ./config/wazuh_indexer/wazuh.indexer.yml:/usr/share/wazuh-indexer/config/opensearch.yml
+      - ./config/wazuh_indexer/internal_users.yml:/usr/share/wazuh-indexer/config/opensearch-security/internal_users.yml
+    networks:
+      backend:
+        ipv4_address: 172.32.0.71
+
+  wazuh.dashboard:
+    image: wazuh/wazuh-dashboard:4.14.4
+    hostname: wazuh.dashboard
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - wazuh.indexer
+    environment:
+      INDEXER_USERNAME: admin
+      INDEXER_PASSWORD: SecretPassword
+      WAZUH_API_URL: https://wazuh.manager
+      DASHBOARD_USERNAME: kibanaserver
+      DASHBOARD_PASSWORD: kibanaserver
+      API_USERNAME: wazuh-wui
+      API_PASSWORD: MyS3cr37P450r.*-
+    volumes:
+      - ./config/wazuh_indexer_ssl_certs/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem
+      - ./config/wazuh_indexer_ssl_certs/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem
+      - ./config/wazuh_indexer_ssl_certs/root-ca.pem:/usr/share/wazuh-dashboard/certs/root-ca.pem
+      - ./config/wazuh_dashboard/opensearch_dashboards.yml:/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
+      - ./config/wazuh_dashboard/wazuh.yml:/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml:ro
+      - wazuh-dashboard-config:/usr/share/wazuh-dashboard/data/wazuh/config
+      - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
+    links:
+      - wazuh.indexer:wazuh.indexer
+      - wazuh.manager:wazuh.manager
+    networks:
+      backend:
+        ipv4_address: 172.32.0.72
+
+  web.agent:
+    image: wazuh/wazuh-agent:4.14.4
+    hostname: lab-web-agent
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      WAZUH_MANAGER: wazuh.manager
+      WAZUH_AGENT_NAME: lab-web-agent
+    volumes:
+      - ./agents/web-agent.conf:/wazuh-config-mount/etc/ossec.conf:ro
+      - ./agents/keys/web.client.keys:/var/ossec/etc/client.keys:ro
+      - web_logs:/var/log/dvwa:ro
+      - web_agent_etc:/var/ossec/etc
+    depends_on:
+      - wazuh.manager
+      - web
+    networks:
+      dmz:
+      backend:
+
+  firewall.agent:
+    build:
+      context: ./proxy-agent
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_add:
+      - NET_ADMIN
+    environment:
+      HOSTNAME: lab-firewall-agent
+      WAZUH_MANAGER: wazuh.manager
+      WAZUH_AGENT_NAME: lab-firewall-agent
+    volumes:
+      - ./agents/firewall-agent.conf:/wazuh-config-mount/etc/ossec.conf:ro
+      - ./agents/keys/firewall.client.keys:/var/ossec/etc/client.keys:ro
+      - firewall_agent_etc:/var/ossec/etc
+    depends_on:
+      - wazuh.manager
+      - firewall
+    network_mode: "service:firewall"
+
+  honeypot.agent:
+    image: wazuh/wazuh-agent:4.14.4
+    hostname: lab-honeypot-agent
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    entrypoint: ["sh", "/opt/lab/honeypot-agent/start.sh"]
+    environment:
+      WAZUH_MANAGER: wazuh.manager
+      WAZUH_AGENT_NAME: lab-honeypot-agent
+    volumes:
+      - ./agents/honeypot-agent.conf:/wazuh-config-mount/etc/ossec.conf:ro
+      - ./agents/keys/honeypot.client.keys:/var/ossec/etc/client.keys:ro
+      - ./honeypot-agent/start.sh:/opt/lab/honeypot-agent/start.sh:ro
+      - honeypot_logs:/var/log/cowrie:ro
+      - honeypot_agent_etc:/var/ossec/etc
+    depends_on:
+      - wazuh.manager
+      - honeypot
+    networks:
+      dmz:
+      backend:
+
+  ldap.agent:
+    image: wazuh/wazuh-agent:4.14.4
+    hostname: lab-ldap-agent
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      WAZUH_MANAGER: wazuh.manager
+      WAZUH_AGENT_NAME: lab-ldap-agent
+    volumes:
+      - ./agents/ldap-agent.conf:/wazuh-config-mount/etc/ossec.conf:ro
+      - ./agents/keys/ldap.client.keys:/var/ossec/etc/client.keys:ro
+      - ldap_logs:/var/log/ldap:ro
+      - ldap_agent_etc:/var/ossec/etc
+    depends_on:
+      - wazuh.manager
+      - ldap
+    networks:
+      dmz:
+      backend:
+
+  proxy.agent:
+    build:
+      context: ./proxy-agent
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_add:
+      - NET_ADMIN
+    environment:
+      HOSTNAME: lab-proxy-agent
+      WAZUH_MANAGER: wazuh.manager
+      WAZUH_AGENT_NAME: lab-proxy-agent
+    volumes:
+      - ./agents/proxy-agent.conf:/wazuh-config-mount/etc/ossec.conf:ro
+      - ./agents/keys/proxy.client.keys:/var/ossec/etc/client.keys:ro
+      - proxy_logs:/var/log/nginx:ro
+      - proxy_agent_etc:/var/ossec/etc
+    depends_on:
+      - wazuh.manager
+      - proxy
+    network_mode: "service:proxy"
+
+  agenteia.agent:
+    image: wazuh/wazuh-agent:4.14.4
+    hostname: lab-agenteia-agent
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      WAZUH_MANAGER: wazuh.manager
+      WAZUH_AGENT_NAME: lab-agenteia-agent
+    volumes:
+      - ./agents/agenteia-agent.conf:/wazuh-config-mount/etc/ossec.conf:ro
+      - ./agents/keys/agenteia.client.keys:/var/ossec/etc/client.keys:ro
+      - agenteia_logs:/var/log/agenteia:ro
+      - agenteia_agent_etc:/var/ossec/etc
+    depends_on:
+      - wazuh.manager
+      - agenteia
+    networks:
+      backend:
+
+  ips.agent:
+    image: wazuh/wazuh-agent:4.14.4
+    hostname: lab-ips-agent
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      WAZUH_MANAGER: wazuh.manager
+      WAZUH_AGENT_NAME: lab-ips-agent
+    volumes:
+      - ./agents/ips-agent.conf:/wazuh-config-mount/etc/ossec.conf:ro
+      - ./agents/keys/ips.client.keys:/var/ossec/etc/client.keys:ro
+      - ips_logs:/var/log/suricata:ro
+      - ips_agent_etc:/var/ossec/etc
+    depends_on:
+      - wazuh.manager
+      - ips
+    networks:
+      backend:
+      dmz:
+
+volumes:
+  ips_logs:
+  dmz_forwarder_state:
+  web_logs:
+  honeypot_logs:
+  proxy_logs:
+  agenteia_logs:
+  ldap_logs:
+  ldap_data:
+  ldap_config:
+  loki_data:
+  grafana_data:
+  database_data:
+  wazuh_api_configuration:
+  wazuh_etc:
+  wazuh_logs:
+  wazuh_queue:
+  wazuh_var_multigroups:
+  wazuh_integrations:
+  wazuh_active_response:
+  wazuh_agentless:
+  wazuh_wodles:
+  filebeat_etc:
+  filebeat_var:
+  wazuh-indexer-data:
+  wazuh-dashboard-config:
+  wazuh-dashboard-custom:
+  web_agent_etc:
+  firewall_agent_etc:
+  honeypot_agent_etc:
+  ldap_agent_etc:
+  proxy_agent_etc:
+  agenteia_agent_etc:
+  ips_agent_etc:
+
+networks:
+  edge:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+  dmz:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.0.0/24
+  backend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.32.0.0/24
