@@ -1,6 +1,6 @@
-# Entorno alternativo endurecido
+# SOC
 
-Este repositorio mantiene intacto el `docker-compose.yml` original y añade un segundo stack en `docker-compose.lab.yml` para practicas con segmentacion por zonas, Wazuh, Loki/Grafana, Suricata y respuesta activa en el firewall.
+SOC para la asignatura de Ciberinteligencia y Ciberdefensa del Máster Universitario en Ciberseguridad de la Universidad de Málaga.
 
 ## Material rapido
 
