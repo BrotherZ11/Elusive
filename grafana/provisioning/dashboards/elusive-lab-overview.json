@@ -40,11 +40,11 @@
               },
               {
                 "color": "yellow",
-                "value": 10
+                "value": 50
               },
               {
                 "color": "red",
-                "value": 30
+                "value": 150
               }
             ]
           },
@@ -79,12 +79,142 @@
         {
           "datasource": "Loki",
           "editorMode": "code",
-          "expr": "sum(count_over_time({job=\"dmz-forwarder\", tag=\"dmz.web\"}[15m]))",
+          "expr": "sum(count_over_time({job=\"dmz-forwarder\", tag=\"dmz.web\"}[1h]))",
           "queryType": "instant",
           "refId": "A"
         }
       ],
-      "title": "Web Requests 15m",
+      "title": "Web Requests 1h",
+      "type": "stat"
+    },
+    {
+      "datasource": "Loki",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 25
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "datasource": "Loki",
+          "editorMode": "code",
+          "expr": "sum(count_over_time({job=\"dmz-forwarder\", tag=\"dmz.honeypot\"}[1h]))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Honeypot Requests 1h",
+      "type": "stat"
+    },
+    {
+      "datasource": "Loki",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "datasource": "Loki",
+          "editorMode": "code",
+          "expr": "sum(count_over_time({job=\"dmz-forwarder\", tag=\"dmz.honeypot\"} |= \"\\\"eventid\\\":\\\"cowrie.login.\" [1h]))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Honeypot SSH Logins 1h",
       "type": "stat"
     },
     {
@@ -120,136 +250,6 @@
       "gridPos": {
         "h": 4,
         "w": 6,
-        "x": 6,
-        "y": 0
-      },
-      "id": 2,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value",
-        "wideLayout": true
-      },
-      "pluginVersion": "10.4.3",
-      "targets": [
-        {
-          "datasource": "Loki",
-          "editorMode": "code",
-          "expr": "sum(count_over_time({job=\"dmz-forwarder\", tag=\"dmz.ips\"} |= \"\\\"event_type\\\":\\\"alert\\\"\" [15m]))",
-          "queryType": "instant",
-          "refId": "A"
-        }
-      ],
-      "title": "IPS Alerts 15m",
-      "type": "stat"
-    },
-    {
-      "datasource": "Loki",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 1
-              },
-              {
-                "color": "red",
-                "value": 3
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 12,
-        "y": 0
-      },
-      "id": 3,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value",
-        "wideLayout": true
-      },
-      "pluginVersion": "10.4.3",
-      "targets": [
-        {
-          "datasource": "Loki",
-          "editorMode": "code",
-          "expr": "sum(count_over_time({job=\"dmz-forwarder\", tag=\"dmz.honeypot\"} |= \"login.failed\" [15m]))",
-          "queryType": "instant",
-          "refId": "A"
-        }
-      ],
-      "title": "Honeypot Failed Logins 15m",
-      "type": "stat"
-    },
-    {
-      "datasource": "Loki",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 10
-              },
-              {
-                "color": "red",
-                "value": 30
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
         "x": 18,
         "y": 0
       },
@@ -274,12 +274,12 @@
         {
           "datasource": "Loki",
           "editorMode": "code",
-          "expr": "sum(count_over_time({job=\"dmz-forwarder\", tag=\"dmz.proxy\"}[15m]))",
+          "expr": "count(count by (srcip) (count_over_time({job=\"dmz-forwarder\", tag=\"dmz.wazuh\"} | json rule_id=\"rule.id\", srcip=\"data.srcip\" | rule_id=\"651\" [1h])))",
           "queryType": "instant",
           "refId": "A"
         }
       ],
-      "title": "Proxy Requests 15m",
+      "title": "Blocked Source IPs 1h",
       "type": "stat"
     },
     {
@@ -398,8 +398,8 @@
     {
       "datasource": "Loki",
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 12,
+        "w": 8,
         "x": 0,
         "y": 12
       },
@@ -430,9 +430,9 @@
     {
       "datasource": "Loki",
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
+        "h": 12,
+        "w": 8,
+        "x": 8,
         "y": 12
       },
       "id": 7,
@@ -451,21 +451,21 @@
         {
           "datasource": "Loki",
           "editorMode": "code",
-          "expr": "{job=\"dmz-forwarder\", tag=\"dmz.ips\"} |= \"\\\"event_type\\\":\\\"alert\\\"\"",
+          "expr": "{job=\"dmz-forwarder\", tag=\"dmz.wazuh\"} | json rule_id=\"rule.id\", description=\"rule.description\", srcip=\"data.srcip\" | rule_id=~\"651|652\" | line_format \"{{.srcip}} {{.rule_id}} {{.description}}\"",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "IPS Alerts",
+      "title": "Blocked IP Activity",
       "type": "logs"
     },
     {
       "datasource": "Loki",
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 20
+        "h": 12,
+        "w": 8,
+        "x": 16,
+        "y": 12
       },
       "id": 8,
       "options": {
@@ -483,66 +483,13 @@
         {
           "datasource": "Loki",
           "editorMode": "code",
-          "expr": "{job=\"dmz-forwarder\", tag=\"dmz.honeypot\"} |= \"cowrie.\"",
+          "expr": "{job=\"dmz-forwarder\", tag=\"dmz.honeypot\"} | json | line_format \"{{.src_ip}} {{.eventid}} user={{.username}} pass={{.password}}\"",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "Honeypot Activity",
+      "title": "Honeypot Connection Detail",
       "type": "logs"
-    },
-    {
-      "datasource": "Loki",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 20
-      },
-      "id": 9,
-      "options": {
-        "dedupStrategy": "none",
-        "enableLogDetails": true,
-        "prettifyLogMessage": true,
-        "showCommonLabels": false,
-        "showLabels": false,
-        "showTime": true,
-        "sortOrder": "Descending",
-        "wrapLogMessage": true
-      },
-      "pluginVersion": "10.4.3",
-      "targets": [
-        {
-          "datasource": "Loki",
-          "editorMode": "code",
-          "expr": "{job=\"dmz-forwarder\", tag=\"dmz.web\"} |= \"union select\" | json | line_format \"SQLi {{.remote}} {{.path}} -> {{.status}}\"",
-          "queryType": "range",
-          "refId": "A"
-        }
-      ],
-      "title": "SQLi Attempts",
-      "type": "logs"
-    },
-    {
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 28
-      },
-      "id": 10,
-      "options": {
-        "code": {
-          "language": "markdown",
-          "showLineNumbers": false,
-          "showMiniMap": false
-        },
-        "content": "## Firewall blocks\n\nVerificacion desde terminal:\n\n```powershell\ndocker exec elusive-lab-firewall.agent-1 sh -c \"tail -n 80 /var/ossec/logs/active-responses.log\"\ndocker exec elusive-lab-firewall-1 sh -c \"iptables -S\"\n```\n\nReglas esperadas cuando se bloquea al atacante:\n\n```text\n-A INPUT -s 172.30.0.20/32 -j DROP\n-A FORWARD -s 172.30.0.20/32 -j DROP\n```\n\nDesbloqueo manual:\n\n```powershell\ndocker exec elusive-lab-firewall-1 sh -c \"iptables -D INPUT -s 172.30.0.20 -j DROP; iptables -D FORWARD -s 172.30.0.20 -j DROP\"\n```",
-        "mode": "markdown"
-      },
-      "pluginVersion": "10.4.3",
-      "title": "Firewall Block Guide",
-      "type": "text"
     }
   ],
   "refresh": "10s",
@@ -558,13 +505,13 @@
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Elusive Lab Overview",
   "uid": "elusive-lab",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }

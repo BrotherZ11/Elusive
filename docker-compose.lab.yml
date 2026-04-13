@@ -174,6 +174,7 @@ services:
       - honeypot_logs:/var/log/cowrie:ro
       - proxy_logs:/var/log/nginx:ro
       - ips_logs:/var/log/suricata:ro
+      - wazuh_logs:/var/log/wazuh:ro
       - dmz_forwarder_state:/var/fluent-bit/state
     restart: unless-stopped
     networks:
@@ -359,7 +360,9 @@ services:
       - web
     networks:
       dmz:
+        ipv4_address: 172.31.0.203
       backend:
+        ipv4_address: 172.32.0.203
 
   firewall.agent:
     build:
@@ -403,7 +406,9 @@ services:
       - honeypot
     networks:
       dmz:
+        ipv4_address: 172.31.0.204
       backend:
+        ipv4_address: 172.32.0.204
 
   ldap.agent:
     image: wazuh/wazuh-agent:4.14.4
@@ -424,7 +429,9 @@ services:
       - ldap
     networks:
       dmz:
+        ipv4_address: 172.31.0.205
       backend:
+        ipv4_address: 172.32.0.205
 
   proxy.agent:
     build:
@@ -487,7 +494,9 @@ services:
       - ips
     networks:
       backend:
+        ipv4_address: 172.32.0.206
       dmz:
+        ipv4_address: 172.31.0.206
 
 volumes:
   ips_logs:

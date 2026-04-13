@@ -10,7 +10,9 @@ log() {
 }
 
 log "[firewall] enabling IPv4 forwarding"
-echo 1 > /proc/sys/net/ipv4/ip_forward || true
+if [ -w /proc/sys/net/ipv4/ip_forward ]; then
+  echo 1 > /proc/sys/net/ipv4/ip_forward || true
+fi
 
 if command -v iptables >/dev/null 2>&1; then
   iptables -F || true
