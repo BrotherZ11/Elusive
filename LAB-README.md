@@ -55,12 +55,13 @@ docker exec -it elusive-lab-attacker-1 sh
 
 ## Flujo de deteccion y bloqueo
 
-1. `attacker` genera trafico contra `web` o `honeypot`.
+1. `attacker` genera trafico contra `web`, `honeypot` o `ldap`.
 2. `lab-web-agent` detecta el SQLi en Apache.
 3. Wazuh dispara la regla nativa `31103`.
 4. Wazuh correlaciona con `100121`.
 5. El agente del firewall ejecuta `firewall-drop`.
 6. El `firewall` inserta reglas `DROP` reales en `iptables`.
+7. Si se toca el honeytoken LDAP `SOC-admin`, Suricata dispara `100104`, Wazuh correlaciona `100131` y se bloquea la IP origen.
 
 ## Respuesta activa
 
@@ -69,6 +70,11 @@ docker exec -it elusive-lab-attacker-1 sh
 - umbral: 4 eventos en 60 segundos
 - accion: `firewall-drop`
 - timeout: 600 segundos
+- regla base LDAP honeytoken: `100104`
+- correlacion LDAP honeytoken: `100131`
+- umbral LDAP honeytoken: 2 eventos en 120 segundos
+- accion LDAP honeytoken: `firewall-drop`
+- timeout LDAP honeytoken: 1800 segundos
 
 ## Verificar el ID del agente del firewall
 
@@ -125,11 +131,35 @@ docker exec -it elusive-lab-attacker-1 sh
 nc -vz 172.31.0.30 389
 ```
 
+### Tokens LDAP y honeytoken
+
+El LDAP se inicializa con entradas en `ou=tokens,dc=elusive,dc=lab`:
+
+- `cn=svc-monitoring` (token operacional)
+- `cn=svc-backup` (token operacional)
+- `cn=SOC-admin` (**honeytoken**, no debe usarse en flujos legitimos)
+
+Verificar desde el contenedor LDAP:
+
+```powershell
+docker exec -it elusive-lab-ldap-1 ldapsearch -x -H ldap://localhost:389 -D "cn=admin,dc=elusive,dc=lab" -w admin123 -b "ou=tokens,dc=elusive,dc=lab" "(objectClass=inetOrgPerson)" cn description
+```
+
+Simular toque de honeytoken (debe generar alerta + bloqueo activo):
+
+```powershell
+docker exec -it elusive-lab-attacker-1 sh
+for i in 1 2; do
+  echo "cn=SOC-admin,ou=tokens,dc=elusive,dc=lab" | nc -w1 172.31.0.30 389 >/dev/null
+done
+```
+
 ## Verificar el bloqueo
 
 En Wazuh:
 
 - busca la `100121`
+- busca la `100131`
 - busca el evento `651` de `firewall-drop`
 
 En terminal:
@@ -207,5 +237,6 @@ docker compose -f docker-compose.lab.yml up -d
 
 - Suricata: `ips/rules/local.rules`
 - Wazuh: `wazuh/local_rules.xml`
+- bootstrap LDAP: `ldap/bootstrap/10-tokens.ldif`
 - Firewall: `firewall/init.sh`
 - Dashboard: `grafana/provisioning/dashboards/elusive-lab-overview.json`
