@@ -57,6 +57,7 @@ Credenciales:
 3. Wazuh dispara la correlacion `100121`.
 4. El agente del firewall ejecuta `firewall-drop`.
 5. El `firewall` inserta reglas `DROP` para la IP atacante.
+6. Si se toca el honeytoken LDAP `SOC-admin`, se activa otra correlacion y bloqueo preventivo.
 
 ## Estructura relevante
 
