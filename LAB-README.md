@@ -81,15 +81,16 @@ docker exec -it elusive-lab-attacker-1 sh
 - accion anomalia IDS: `firewall-drop`
 - timeout anomalia IDS: 900 segundos
 
-## Verificar el ID del agente del firewall
+## Identidad fija del agente del firewall
 
-La respuesta activa `defined-agent` depende del ID asignado por Wazuh:
+El laboratorio usa `client.keys` estatico para que `lab-firewall-agent` conserve siempre el ID `003`.
+No hace falta reajustar `<agent_id>` en cada despliegue.
+
+Si quieres verificarlo:
 
 ```powershell
 docker exec elusive-lab-wazuh.manager-1 /var/ossec/bin/agent_control -l
 ```
-
-Si cambia en un despliegue limpio, ajusta `<agent_id>` en `config/wazuh_cluster/wazuh_manager.conf` y recrea `wazuh.manager`.
 
 ## Pruebas recomendadas
 
