@@ -27,6 +27,13 @@
     <description>LDAP access observed in the DMZ.</description>
     <group>ldap,dmz,</group>
   </rule>
+
+  <rule id="100104" level="13">
+    <if_sid>100100</if_sid>
+    <field name="alert.signature">ELUSIVE LDAP honeytoken touched (SOC-admin)</field>
+    <description>LDAP honeytoken account was queried or used. Treat source as hostile.</description>
+    <group>ldap,honeytoken,dmz,attack,</group>
+  </rule>
 </group>
 
 <group name="lab,proxy,">
@@ -35,6 +42,13 @@
     <same_source_ip />
     <description>Repeated SQL injection attempts detected from $(srcip). Active response will block the source IP on the firewall.</description>
     <group>attack,web,dmz,firewall,active_response,</group>
+  </rule>
+
+  <rule id="100131" level="14" frequency="2" timeframe="120" ignore="300">
+    <if_matched_sid>100104</if_matched_sid>
+    <same_source_ip />
+    <description>Repeated LDAP honeytoken interactions from $(srcip). Active defense will block the source IP on the firewall.</description>
+    <group>attack,ldap,honeytoken,dmz,firewall,active_response,</group>
   </rule>
 </group>
 
