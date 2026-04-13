@@ -1,0 +1,38 @@
+dn: ou=tokens,dc=elusive,dc=lab
+objectClass: organizationalUnit
+ou: tokens
+
+dn: cn=svc-monitoring,ou=tokens,dc=elusive,dc=lab
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+cn: svc-monitoring
+sn: monitoring
+uid: svc-monitoring
+description: token=ldap-readonly-monitoring
+mail: svc-monitoring@elusive.lab
+userPassword: monitor123
+
+dn: cn=svc-backup,ou=tokens,dc=elusive,dc=lab
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+cn: svc-backup
+sn: backup
+uid: svc-backup
+description: token=ldap-backup-sync
+mail: svc-backup@elusive.lab
+userPassword: backup123
+
+dn: cn=SOC-admin,ou=tokens,dc=elusive,dc=lab
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+cn: SOC-admin
+sn: admin
+uid: soc-admin
+description: honeytoken=do-not-use
+description: owner=soc
+description: severity=critical
+mail: soc-admin@elusive.lab
+userPassword: HoneyTrap123!
