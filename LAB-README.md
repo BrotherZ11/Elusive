@@ -62,6 +62,7 @@ docker exec -it elusive-lab-attacker-1 sh
 5. El agente del firewall ejecuta `firewall-drop`.
 6. El `firewall` inserta reglas `DROP` reales en `iptables`.
 7. Si se toca el honeytoken LDAP `SOC-admin`, Suricata dispara `100104`, Wazuh correlaciona `100131` y se bloquea la IP origen.
+8. Si una IP genera una rafaga anomala de alertas IDS en poco tiempo, Wazuh dispara `100132` y bloquea preventivamente la fuente.
 
 ## Respuesta activa
 
@@ -75,6 +76,10 @@ docker exec -it elusive-lab-attacker-1 sh
 - umbral LDAP honeytoken: 2 eventos en 120 segundos
 - accion LDAP honeytoken: `firewall-drop`
 - timeout LDAP honeytoken: 1800 segundos
+- regla de anomalia IDS: `100132`
+- umbral anomalia IDS: 6 alertas Suricata en 90 segundos (misma IP)
+- accion anomalia IDS: `firewall-drop`
+- timeout anomalia IDS: 900 segundos
 
 ## Verificar el ID del agente del firewall
 
@@ -154,12 +159,26 @@ for i in 1 2; do
 done
 ```
 
+### Activar defensa activa por anomalia IDS
+
+Genera una rafaga de eventos en servicios DMZ para disparar la correlacion `100132`:
+
+```powershell
+docker exec -it elusive-lab-attacker-1 sh
+for i in 1 2 3; do
+  curl -s "http://172.31.0.20/vulnerabilities/sqli/?id=1%20union%20select%201,2&Submit=Submit" >/dev/null
+  nc -w1 172.31.0.30 389 </dev/null >/dev/null
+  nc -w1 172.31.0.40 2223 </dev/null >/dev/null
+done
+```
+
 ## Verificar el bloqueo
 
 En Wazuh:
 
 - busca la `100121`
 - busca la `100131`
+- busca la `100132`
 - busca el evento `651` de `firewall-drop`
 
 En terminal:
