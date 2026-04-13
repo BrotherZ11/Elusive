@@ -4,3 +4,4 @@
 004 lab-web-agent any 810926d6ee1a03d1ad2182de2e602cc25fa9e7a400a6787ded6f53ea578b74e4
 005 lab-proxy-agent any ed19a9cfd2ef2b2d621d9282a4aeb480838e107e0b1ddcb76af6198528774b72
 006 lab-honeypot-agent any a0a97f8b75f8f8f63104d88fa014ce8d0654063bc4dd1bab7c6ed0afd03b80ac
+007 lab-ldap-agent any 2d9b78d7fc46db3a7aa1d2b93e019fd95f4fd7c4d4ec8d5a879a81ffd1aa0e70

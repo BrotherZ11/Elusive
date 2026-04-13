@@ -13,7 +13,7 @@ Este repositorio mantiene intacto el `docker-compose.yml` original y añade un s
 - `edge`: `nat1`, `attacker`, `firewall`
 - `dmz`: `web`, `ldap`, `honeypot`, `proxy`, `ips`
 - `backend`: `logs`, `grafana`, `agenteia`, `database`, `wazuh.*`
-- agentes Wazuh sidecar: `lab-web-agent`, `lab-honeypot-agent`, `lab-proxy-agent`, `lab-ips-agent`, `lab-agenteia-agent` y el agente del firewall
+- agentes Wazuh sidecar: `lab-web-agent`, `lab-honeypot-agent`, `lab-proxy-agent`, `lab-ips-agent`, `lab-agenteia-agent`, `lab-ldap-agent` y el agente del firewall
 
 ## Arranque
 
@@ -58,7 +58,10 @@ Credenciales:
 4. El agente del firewall ejecuta `firewall-drop`.
 5. El `firewall` inserta reglas `DROP` para la IP atacante.
 6. Si se toca el honeytoken LDAP `SOC-admin`, se activa otra correlacion y bloqueo preventivo.
-7. Si una IP muestra un patron anomalo (rafaga IDS), se activa correlacion `100132` y bloqueo automatico.
+7. Si Cowrie observa multiples fallos SSH, se activa la correlacion `100133` y bloqueo automatico.
+8. Si Cowrie observa una rafaga de conexiones SSH, se activa la correlacion `100134` y bloqueo automatico.
+9. Si Cowrie registra un login exitoso en el honeypot, se activa la correlacion `100135` y bloqueo automatico.
+10. Si una IP muestra un patron anomalo (rafaga IDS), se activa correlacion `100132` y bloqueo automatico.
 
 ## Estructura relevante
 

@@ -86,7 +86,9 @@ services:
         ipv4_address: 172.32.0.22
 
   ldap:
-    image: osixia/openldap:1.5.0
+    build:
+      context: ./ldap
+    entrypoint: ["sh", "/opt/lab/ldap/start.sh"]
     security_opt:
       - no-new-privileges:true
     environment:
@@ -98,7 +100,7 @@ services:
     volumes:
       - ldap_data:/var/lib/ldap
       - ldap_config:/etc/ldap/slapd.d
-      - ./ldap/bootstrap:/container/service/slapd/assets/config/bootstrap/ldif/custom:ro
+      - ldap_logs:/var/log/ldap
     networks:
       dmz:
         ipv4_address: 172.31.0.30
@@ -386,17 +388,40 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
+    entrypoint: ["sh", "/opt/lab/honeypot-agent/start.sh"]
     environment:
       WAZUH_MANAGER: wazuh.manager
       WAZUH_AGENT_NAME: lab-honeypot-agent
     volumes:
       - ./agents/honeypot-agent.conf:/wazuh-config-mount/etc/ossec.conf:ro
       - ./agents/keys/honeypot.client.keys:/var/ossec/etc/client.keys:ro
+      - ./honeypot-agent/start.sh:/opt/lab/honeypot-agent/start.sh:ro
       - honeypot_logs:/var/log/cowrie:ro
       - honeypot_agent_etc:/var/ossec/etc
     depends_on:
       - wazuh.manager
       - honeypot
+    networks:
+      dmz:
+      backend:
+
+  ldap.agent:
+    image: wazuh/wazuh-agent:4.14.4
+    hostname: lab-ldap-agent
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      WAZUH_MANAGER: wazuh.manager
+      WAZUH_AGENT_NAME: lab-ldap-agent
+    volumes:
+      - ./agents/ldap-agent.conf:/wazuh-config-mount/etc/ossec.conf:ro
+      - ./agents/keys/ldap.client.keys:/var/ossec/etc/client.keys:ro
+      - ldap_logs:/var/log/ldap:ro
+      - ldap_agent_etc:/var/ossec/etc
+    depends_on:
+      - wazuh.manager
+      - ldap
     networks:
       dmz:
       backend:
@@ -471,6 +496,7 @@ volumes:
   honeypot_logs:
   proxy_logs:
   agenteia_logs:
+  ldap_logs:
   ldap_data:
   ldap_config:
   loki_data:
@@ -493,6 +519,7 @@ volumes:
   web_agent_etc:
   firewall_agent_etc:
   honeypot_agent_etc:
+  ldap_agent_etc:
   proxy_agent_etc:
   agenteia_agent_etc:
   ips_agent_etc:
