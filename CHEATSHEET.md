@@ -114,12 +114,6 @@ Usuario conocido:
 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 2222 root@172.31.0.40
 ```
 
-### Honeypot Telnet
-
-```sh
-nc -vz 172.31.0.40 2223
-```
-
 ### LDAP
 
 ```sh

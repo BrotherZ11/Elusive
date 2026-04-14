@@ -112,8 +112,8 @@ services:
     restart: unless-stopped
     ports:
       - "2225:2222"
-      - "2226:2223"
     volumes:
+      - ./honeypot/cowrie.cfg:/cowrie/cowrie-git/etc/cowrie.cfg:ro
       - honeypot_logs:/cowrie/cowrie-git/var/log/cowrie
     networks:
       dmz:

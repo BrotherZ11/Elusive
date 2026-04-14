@@ -26,7 +26,7 @@ if command -v iptables >/dev/null 2>&1; then
 
   # Only permit representative DMZ access paths from the edge segment.
   iptables -A FORWARD -s 172.30.0.0/24 -d 172.31.0.20 -p tcp --dport 80 -j ACCEPT || true
-  iptables -A FORWARD -s 172.30.0.0/24 -d 172.31.0.40 -p tcp -m multiport --dports 2222,2223 -j ACCEPT || true
+  iptables -A FORWARD -s 172.30.0.0/24 -d 172.31.0.40 -p tcp --dport 2222 -j ACCEPT || true
   iptables -A FORWARD -s 172.30.0.0/24 -d 172.31.0.30 -p tcp --dport 389 -j ACCEPT || true
   iptables -A FORWARD -s 172.31.0.0/24 -d 172.32.0.0/24 -p tcp -m multiport --dports 80,443,3000,3100,5432,9200,5601,8000 -j ACCEPT || true
 fi

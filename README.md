@@ -6,6 +6,7 @@ SOC para la asignatura de Ciberinteligencia y Ciberdefensa del Máster Universit
 
 - guia corta: `CHEATSHEET.md`
 - guia detallada: `LAB-README.md`
+- guia de ataque para clase: `GUIA-ATAQUE.md`
 - diagrama del stack: `assets/compose-diagram.svg`
 
 ## Componentes
@@ -42,7 +43,6 @@ docker compose -f docker-compose.lab.yml ps
 - Grafana: `http://localhost:3001`
 - AgenteIA: `http://localhost:8001`
 - Honeypot SSH: `localhost:2225`
-- Honeypot Telnet: `localhost:2226`
 
 Credenciales:
 

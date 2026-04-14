@@ -11,7 +11,7 @@ Idea principal:
 Objetivos posibles:
 
 - mover o duplicar el honeypot a una posicion mas expuesta en `edge` o en una subzona previa a la `dmz`
-- capturar mas intentos SSH y Telnet reales
+- capturar mas intentos SSH reales
 - correlacionar los eventos del honeypot con reglas Wazuh para marcar IPs hostiles recurrentes
 - usar esos eventos como disparador de bloqueo preventivo en el `firewall`
 
@@ -31,7 +31,7 @@ Estado actual:
 Siguiente evolucion:
 
 - bloquear tambien IPs que interactuen repetidamente con el honeypot
-- definir umbrales distintos para SSH, Telnet y ataques web
+- definir umbrales distintos para SSH y ataques web
 - mantener listas temporales de IPs bloqueadas
 
 Casos utiles:

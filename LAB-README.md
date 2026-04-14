@@ -35,7 +35,6 @@ Desde `attacker`:
 
 - DVWA: `http://172.31.0.20`
 - Honeypot SSH: `172.31.0.40:2222`
-- Honeypot Telnet: `172.31.0.40:2223`
 - LDAP: `172.31.0.30:389`
 - credencial conocida del honeypot SSH: `root` con password vacia
 
@@ -185,13 +184,6 @@ Credencial conocida del honeypot:
 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 2222 root@172.31.0.40
 ```
 
-### Honeypot Telnet
-
-```powershell
-docker exec -it elusive-lab-attacker-1 sh
-nc -vz 172.31.0.40 2223
-```
-
 ### LDAP basico
 
 ```powershell
@@ -244,7 +236,6 @@ docker exec -it elusive-lab-attacker-1 sh
 for i in 1 2 3; do
   curl -s "http://172.31.0.20/vulnerabilities/sqli/?id=1%20union%20select%201,2&Submit=Submit" >/dev/null
   nc -w1 172.31.0.30 389 </dev/null >/dev/null
-  nc -w1 172.31.0.40 2223 </dev/null >/dev/null
 done
 ```
 

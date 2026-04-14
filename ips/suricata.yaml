@@ -8,7 +8,7 @@ vars:
     BACKEND_NET: "[172.32.0.0/24]"
   port-groups:
     HTTP_PORTS: "80"
-    SSH_PORTS: "2222,2223"
+    SSH_PORTS: "2222"
     LDAP_PORTS: "389"
 
 default-rule-path: /var/lib/suricata/rules

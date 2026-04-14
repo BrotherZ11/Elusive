@@ -87,7 +87,7 @@
   <rect x="1094" y="466" width="286" height="116" rx="24" ry="24" class="service"/>
   <text x="1237" y="504" text-anchor="middle" class="nodeTitle">honeypot</text>
   <text x="1237" y="530" text-anchor="middle" class="body">image: cowrie/cowrie:latest</text>
-  <text x="1237" y="554" text-anchor="middle" class="mono">dmz 172.31.0.40 | ports 2225/2226</text>
+  <text x="1237" y="554" text-anchor="middle" class="mono">dmz 172.31.0.40 | port 2225</text>
   <rect x="1164" y="592" width="146" height="30" rx="15" ry="15" class="agent"/>
   <text x="1237" y="612" text-anchor="middle" class="note">honeypot.agent</text>
 
