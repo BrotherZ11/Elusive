@@ -30,20 +30,68 @@ services:
       backend:
         ipv4_address: 172.32.0.254
 
-  attacker:
-    image: nicolaka/netshoot:latest
+  attacker01:
+    build:
+      context: ./attacker
     cap_add:
       - NET_ADMIN
       - NET_RAW
     security_opt:
       - no-new-privileges:true
-    command: ["sh", "/opt/lab/attacker/init.sh"]
+    command: ["sh", "/opt/lab/attacker/start.sh"]
+    environment:
+      ATTACKER_USER: kali01
+      ATTACKER_PASSWORD: KaliSOC01!
+    ports:
+      - "2221:22"
     volumes:
-      - ./attacker/init.sh:/opt/lab/attacker/init.sh:ro
+      - ./attacker/start.sh:/opt/lab/attacker/start.sh:ro
     restart: unless-stopped
     networks:
       edge:
         ipv4_address: 172.30.0.20
+
+  attacker02:
+    build:
+      context: ./attacker
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    security_opt:
+      - no-new-privileges:true
+    command: ["sh", "/opt/lab/attacker/start.sh"]
+    environment:
+      ATTACKER_USER: kali02
+      ATTACKER_PASSWORD: KaliSOC02!
+    ports:
+      - "2222:22"
+    volumes:
+      - ./attacker/start.sh:/opt/lab/attacker/start.sh:ro
+    restart: unless-stopped
+    networks:
+      edge:
+        ipv4_address: 172.30.0.21
+
+  attacker03:
+    build:
+      context: ./attacker
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    security_opt:
+      - no-new-privileges:true
+    command: ["sh", "/opt/lab/attacker/start.sh"]
+    environment:
+      ATTACKER_USER: kali03
+      ATTACKER_PASSWORD: KaliSOC03!
+    ports:
+      - "2223:22"
+    volumes:
+      - ./attacker/start.sh:/opt/lab/attacker/start.sh:ro
+    restart: unless-stopped
+    networks:
+      edge:
+        ipv4_address: 172.30.0.22
 
   ips:
     image: jasonish/suricata:7.0
@@ -188,8 +236,8 @@ services:
     security_opt:
       - no-new-privileges:true
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: SecretPassword
+      GF_SECURITY_ADMIN_USER: HomerCison
+      GF_SECURITY_ADMIN_PASSWORD: ManoloGonorrea67%
       GF_SERVER_HTTP_PORT: "3000"
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
@@ -248,8 +296,8 @@ services:
         hard: 655360
     environment:
       INDEXER_URL: https://wazuh.indexer:9200
-      INDEXER_USERNAME: admin
-      INDEXER_PASSWORD: SecretPassword
+      INDEXER_USERNAME: HomerCison
+      INDEXER_PASSWORD: ManoloGonorrea67%
       FILEBEAT_SSL_VERIFICATION_MODE: full
       SSL_CERTIFICATE_AUTHORITIES: /etc/ssl/root-ca.pem
       SSL_CERTIFICATE: /etc/ssl/filebeat.pem
@@ -319,8 +367,8 @@ services:
     depends_on:
       - wazuh.indexer
     environment:
-      INDEXER_USERNAME: admin
-      INDEXER_PASSWORD: SecretPassword
+      INDEXER_USERNAME: HomerCison
+      INDEXER_PASSWORD: ManoloGonorrea67%
       WAZUH_API_URL: https://wazuh.manager
       DASHBOARD_USERNAME: kibanaserver
       DASHBOARD_PASSWORD: kibanaserver

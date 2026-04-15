@@ -25,13 +25,13 @@ docker compose -f docker-compose.lab.yml ps
 ## Regla importante
 
 - Desde Windows usa `localhost`.
-- Desde `attacker` usa las IP internas `172.31.x.x`.
-- Para validar bloqueo por IP, el ataque debe salir desde `attacker`.
+- Desde `attacker01`, `attacker02` o `attacker03` usa las IP internas `172.31.x.x`.
+- Para validar bloqueo por IP, el ataque debe salir desde `attacker01`, `attacker02` o `attacker03`.
 
-Entrar al atacante:
+Entrar a un atacante:
 
 ```powershell
-docker exec -it elusive-lab-attacker-1 sh
+docker exec -it elusive-lab-attacker01-1 sh
 ```
 
 ## Agentes esperados
@@ -85,7 +85,7 @@ ssh admin@172.31.0.40 -p 2222
 
 ### Fuerza bruta SSH en honeypot
 
-Instala `sshpass` en `attacker` si hace falta:
+Instala `sshpass` en un atacante si hace falta:
 
 ```sh
 apk add --no-cache sshpass
@@ -138,7 +138,7 @@ docker exec elusive-lab-ldap-1 ldapsearch -x -H ldap://localhost:389 -D "cn=admi
 
 ### Ataque LDAP honeytoken
 
-Instala el cliente LDAP en `attacker` si hace falta:
+Instala el cliente LDAP en un atacante si hace falta:
 
 ```sh
 apk add --no-cache openldap-clients

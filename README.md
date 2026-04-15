@@ -11,7 +11,7 @@ SOC para la asignatura de Ciberinteligencia y Ciberdefensa del Máster Universit
 
 ## Componentes
 
-- `edge`: `nat1`, `attacker`, `firewall`
+- `edge`: `nat1`, `attacker01`, `attacker02`, `attacker03`, `firewall`
 - `dmz`: `web`, `ldap`, `honeypot`, `proxy`, `ips`
 - `backend`: `logs`, `grafana`, `agenteia`, `database`, `wazuh.*`
 - `internal`: `endpoint.workstation`, `endpoint.mobile01`, `endpoint.mobile02`
@@ -54,7 +54,7 @@ Credenciales:
 
 ## Flujo de defensa activa
 
-1. El ataque sale desde `attacker`.
+1. El ataque sale desde `attacker01`, `attacker02` o `attacker03`.
 2. `lab-web-agent` detecta el SQLi.
 3. Wazuh dispara la correlacion `100121`.
 4. El agente del firewall ejecuta `firewall-drop`.
@@ -82,4 +82,4 @@ Credenciales:
 
 ## Nota
 
-Para validar bloqueo por IP de forma realista, los ataques deben salir desde `attacker`, no desde `localhost`.
+Para validar bloqueo por IP de forma realista, los ataques deben salir desde `attacker01`, `attacker02` o `attacker03`, no desde `localhost`.
