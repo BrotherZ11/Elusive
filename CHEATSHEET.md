@@ -43,6 +43,16 @@ docker exec -it elusive-lab-attacker-1 sh
 - `lab-agenteia-agent`
 - `lab-firewall-agent`
 - `lab-ldap-agent`
+- `lab-endpoint-workstation-agent`
+- `lab-endpoint-mobile01-agent`
+- `lab-endpoint-mobile02-agent`
+
+## Endpoints internos (simulados)
+
+- `endpoint.workstation` (`172.33.0.10`)
+- `endpoint.mobile01` (`172.33.0.20`)
+- `endpoint.mobile02` (`172.33.0.21`)
+- todos usan XDR basado en Wazuh y envian telemetria desde `/var/log/endpoint/activity.log`
 
 ## Pruebas rapidas
 
