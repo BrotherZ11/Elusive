@@ -12,9 +12,10 @@ Guia completa del stack definido en `docker-compose.lab.yml`.
 
 El laboratorio incluye:
 
-- segmentacion `edge`, `dmz`, `backend`
+- segmentacion `edge`, `dmz`, `backend`, `internal`
 - `attacker`, `firewall`, `ips`
 - `web`, `ldap`, `honeypot`, `proxy`
+- endpoints internos simulados: `endpoint.workstation`, `endpoint.mobile01`, `endpoint.mobile02`
 - `logs` + `grafana`
 - `wazuh.manager`, `wazuh.indexer`, `wazuh.dashboard`
 - agentes Wazuh sidecar
@@ -53,6 +54,11 @@ docker exec -it elusive-lab-attacker-1 sh
 - `lab-agenteia-agent`
 - `lab-firewall-agent`
 - `lab-ldap-agent`
+- `lab-endpoint-workstation-agent`
+- `lab-endpoint-mobile01-agent`
+- `lab-endpoint-mobile02-agent`
+
+Los tres endpoints internos actuan como equipos de trabajo (PC y moviles) y envian telemetria de actividad mediante su agente XDR (Wazuh) leyendo `/var/log/endpoint/activity.log`.
 
 ## Flujo de deteccion y bloqueo
 

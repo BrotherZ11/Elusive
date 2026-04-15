@@ -498,6 +498,141 @@ services:
       dmz:
         ipv4_address: 172.31.0.206
 
+  endpoint.workstation:
+    image: alpine:3.20
+    security_opt:
+      - no-new-privileges:true
+    command:
+      - sh
+      - -c
+      - |
+        mkdir -p /var/log/endpoint
+        i=0
+        while true; do
+          i=$((i+1))
+          printf "%s workstation01 systemd[1]: Session heartbeat user=analyst app=browser seq=%s\n" "$(date -u '+%b %d %H:%M:%S')" "$i" >> /var/log/endpoint/activity.log
+          sleep 25
+        done
+    restart: unless-stopped
+    volumes:
+      - endpoint_workstation_logs:/var/log/endpoint
+    networks:
+      internal:
+        ipv4_address: 172.33.0.10
+
+  endpoint.mobile01:
+    image: alpine:3.20
+    security_opt:
+      - no-new-privileges:true
+    command:
+      - sh
+      - -c
+      - |
+        mkdir -p /var/log/endpoint
+        i=0
+        while true; do
+          i=$((i+1))
+          printf "%s mobile01 android-telemetry: device=android user=field-tech event=sync status=ok seq=%s\n" "$(date -u '+%b %d %H:%M:%S')" "$i" >> /var/log/endpoint/activity.log
+          sleep 30
+        done
+    restart: unless-stopped
+    volumes:
+      - endpoint_mobile01_logs:/var/log/endpoint
+    networks:
+      internal:
+        ipv4_address: 172.33.0.20
+
+  endpoint.mobile02:
+    image: alpine:3.20
+    security_opt:
+      - no-new-privileges:true
+    command:
+      - sh
+      - -c
+      - |
+        mkdir -p /var/log/endpoint
+        i=0
+        while true; do
+          i=$((i+1))
+          printf "%s mobile02 ios-telemetry: device=ios user=ops-manager event=mail-check status=ok seq=%s\n" "$(date -u '+%b %d %H:%M:%S')" "$i" >> /var/log/endpoint/activity.log
+          sleep 35
+        done
+    restart: unless-stopped
+    volumes:
+      - endpoint_mobile02_logs:/var/log/endpoint
+    networks:
+      internal:
+        ipv4_address: 172.33.0.21
+
+  endpoint.workstation.agent:
+    image: wazuh/wazuh-agent:4.14.4
+    hostname: lab-endpoint-workstation-agent
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      WAZUH_MANAGER: wazuh.manager
+      WAZUH_AGENT_NAME: lab-endpoint-workstation-agent
+    volumes:
+      - ./agents/endpoint-agent.conf:/wazuh-config-mount/etc/ossec.conf:ro
+      - ./agents/keys/endpoint-workstation.client.keys:/var/ossec/etc/client.keys:ro
+      - endpoint_workstation_logs:/var/log/endpoint:ro
+      - endpoint_workstation_agent_etc:/var/ossec/etc
+    depends_on:
+      - wazuh.manager
+      - endpoint.workstation
+    networks:
+      internal:
+        ipv4_address: 172.33.0.210
+      backend:
+        ipv4_address: 172.32.0.210
+
+  endpoint.mobile01.agent:
+    image: wazuh/wazuh-agent:4.14.4
+    hostname: lab-endpoint-mobile01-agent
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      WAZUH_MANAGER: wazuh.manager
+      WAZUH_AGENT_NAME: lab-endpoint-mobile01-agent
+    volumes:
+      - ./agents/endpoint-agent.conf:/wazuh-config-mount/etc/ossec.conf:ro
+      - ./agents/keys/endpoint-mobile01.client.keys:/var/ossec/etc/client.keys:ro
+      - endpoint_mobile01_logs:/var/log/endpoint:ro
+      - endpoint_mobile01_agent_etc:/var/ossec/etc
+    depends_on:
+      - wazuh.manager
+      - endpoint.mobile01
+    networks:
+      internal:
+        ipv4_address: 172.33.0.211
+      backend:
+        ipv4_address: 172.32.0.211
+
+  endpoint.mobile02.agent:
+    image: wazuh/wazuh-agent:4.14.4
+    hostname: lab-endpoint-mobile02-agent
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      WAZUH_MANAGER: wazuh.manager
+      WAZUH_AGENT_NAME: lab-endpoint-mobile02-agent
+    volumes:
+      - ./agents/endpoint-agent.conf:/wazuh-config-mount/etc/ossec.conf:ro
+      - ./agents/keys/endpoint-mobile02.client.keys:/var/ossec/etc/client.keys:ro
+      - endpoint_mobile02_logs:/var/log/endpoint:ro
+      - endpoint_mobile02_agent_etc:/var/ossec/etc
+    depends_on:
+      - wazuh.manager
+      - endpoint.mobile02
+    networks:
+      internal:
+        ipv4_address: 172.33.0.212
+      backend:
+        ipv4_address: 172.32.0.212
+
 volumes:
   ips_logs:
   dmz_forwarder_state:
@@ -532,6 +667,12 @@ volumes:
   proxy_agent_etc:
   agenteia_agent_etc:
   ips_agent_etc:
+  endpoint_workstation_logs:
+  endpoint_mobile01_logs:
+  endpoint_mobile02_logs:
+  endpoint_workstation_agent_etc:
+  endpoint_mobile01_agent_etc:
+  endpoint_mobile02_agent_etc:
 
 networks:
   edge:
@@ -549,3 +690,8 @@ networks:
     ipam:
       config:
         - subnet: 172.32.0.0/24
+  internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.33.0.0/24

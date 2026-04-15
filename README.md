@@ -14,7 +14,9 @@ SOC para la asignatura de Ciberinteligencia y Ciberdefensa del Máster Universit
 - `edge`: `nat1`, `attacker`, `firewall`
 - `dmz`: `web`, `ldap`, `honeypot`, `proxy`, `ips`
 - `backend`: `logs`, `grafana`, `agenteia`, `database`, `wazuh.*`
+- `internal`: `endpoint.workstation`, `endpoint.mobile01`, `endpoint.mobile02`
 - agentes Wazuh sidecar: `lab-web-agent`, `lab-honeypot-agent`, `lab-proxy-agent`, `lab-ips-agent`, `lab-agenteia-agent`, `lab-ldap-agent` y el agente del firewall
+- agentes XDR en endpoints internos (Wazuh): `lab-endpoint-workstation-agent`, `lab-endpoint-mobile01-agent`, `lab-endpoint-mobile02-agent`
 
 ## Arranque
 
@@ -62,6 +64,7 @@ Credenciales:
 8. Si Cowrie observa una rafaga de conexiones SSH, se activa la correlacion `100134` y bloqueo automatico.
 9. Si Cowrie registra un login exitoso en el honeypot, se activa la correlacion `100135` y bloqueo automatico.
 10. Si una IP muestra un patron anomalo (rafaga IDS), se activa correlacion `100132` y bloqueo automatico.
+11. Los endpoints internos simulados (ordenador y moviles) generan telemetria local en `/var/log/endpoint/activity.log` y sus agentes XDR la envian al manager Wazuh.
 
 ## Estructura relevante
 
