@@ -25,6 +25,9 @@ if command -v iptables >/dev/null 2>&1; then
   iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT || true
 
   # Only permit representative DMZ access paths from the edge segment.
+  iptables -A FORWARD -s 172.30.0.0/24 -d 172.31.0.20 -p icmp --icmp-type echo-request -j ACCEPT || true
+  iptables -A FORWARD -s 172.30.0.0/24 -d 172.31.0.30 -p icmp --icmp-type echo-request -j ACCEPT || true
+  iptables -A FORWARD -s 172.30.0.0/24 -d 172.31.0.40 -p icmp --icmp-type echo-request -j ACCEPT || true
   iptables -A FORWARD -s 172.30.0.0/24 -d 172.31.0.20 -p tcp --dport 80 -j ACCEPT || true
   iptables -A FORWARD -s 172.30.0.0/24 -d 172.31.0.40 -p tcp --dport 2222 -j ACCEPT || true
   iptables -A FORWARD -s 172.30.0.0/24 -d 172.31.0.30 -p tcp --dport 389 -j ACCEPT || true

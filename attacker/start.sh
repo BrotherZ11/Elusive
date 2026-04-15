@@ -15,7 +15,7 @@ ssh-keygen -A
 
 sed -i 's/^#\?PasswordAuthentication .*/PasswordAuthentication yes/' /etc/ssh/sshd_config
 sed -i 's/^#\?PermitRootLogin .*/PermitRootLogin no/' /etc/ssh/sshd_config
-sed -i 's/^#\?UsePAM .*/UsePAM no/' /etc/ssh/sshd_config
+sed -i 's/^#\?UsePAM .*/UsePAM yes/' /etc/ssh/sshd_config
 
 ip route add 172.31.0.0/24 via 172.30.0.2 || true
 ip route add 172.32.0.0/24 via 172.30.0.2 || true

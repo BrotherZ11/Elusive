@@ -41,7 +41,7 @@ services:
     command: ["sh", "/opt/lab/attacker/start.sh"]
     environment:
       ATTACKER_USER: kali01
-      ATTACKER_PASSWORD: KaliSOC01!
+      ATTACKER_PASSWORD: kali01
     ports:
       - "2221:22"
     volumes:
@@ -62,7 +62,7 @@ services:
     command: ["sh", "/opt/lab/attacker/start.sh"]
     environment:
       ATTACKER_USER: kali02
-      ATTACKER_PASSWORD: KaliSOC02!
+      ATTACKER_PASSWORD: kali02
     ports:
       - "2222:22"
     volumes:
@@ -83,7 +83,7 @@ services:
     command: ["sh", "/opt/lab/attacker/start.sh"]
     environment:
       ATTACKER_USER: kali03
-      ATTACKER_PASSWORD: KaliSOC03!
+      ATTACKER_PASSWORD: kali03
     ports:
       - "2223:22"
     volumes:
