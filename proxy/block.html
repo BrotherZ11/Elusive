@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Acceso bloqueado</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d1b1e;
+      --panel: #13262a;
+      --line: #2f5d62;
+      --text: #edf6f7;
+      --muted: #9dc0c4;
+      --accent: #ff6b35;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at top, rgba(255, 107, 53, 0.18), transparent 38%),
+        linear-gradient(180deg, #102329 0%, var(--bg) 100%);
+      color: var(--text);
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(92vw, 760px);
+      padding: 2rem;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(19, 38, 42, 0.94);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+    }
+
+    .badge {
+      display: inline-block;
+      margin-bottom: 1rem;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(255, 107, 53, 0.12);
+      color: #ffb08f;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 0.8rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1.05;
+    }
+
+    p {
+      margin: 0 0 1rem;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .frame {
+      margin-top: 1.5rem;
+      padding: 1rem 1.2rem;
+      border-left: 4px solid var(--accent);
+      background: rgba(0, 0, 0, 0.18);
+      border-radius: 12px;
+    }
+
+    strong {
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="badge">Elusive SOC</div>
+    <h1>Acceso web bloqueado</h1>
+    <p>Tu actividad ha activado una medida de contencion temporal del laboratorio.</p>
+    <p>Durante este periodo, el acceso HTTP ha sido redirigido a esta pagina de bloqueo. Los demas servicios del entorno siguen bloqueados a nivel de firewall.</p>
+    <div class="frame">
+      <strong>Tiempo estimado de bloqueo:</strong> 1 minuto
+    </div>
+  </main>
+</body>
+</html>

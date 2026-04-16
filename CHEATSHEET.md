@@ -165,16 +165,56 @@ done
 ## Ver bloqueo
 
 ```powershell
-docker exec elusive-lab-wazuh.manager-1 sh -c "grep '100105\|100131\|100106\|100133\|100108\|100134\|100107\|100135\|firewall-drop' /var/ossec/logs/alerts/alerts.json | tail -n 40"
-docker exec elusive-lab-firewall.agent-1 sh -c "tail -n 50 /var/ossec/logs/active-responses.log"
-docker exec elusive-lab-firewall-1 sh -c "iptables -S"
+docker exec elusive-lab-wazuh.manager-1 sh -c "grep '100121\|100131\|100132\|100133\|100134\|100135\|firewall-drop' /var/ossec/logs/alerts/alerts.json | tail -n 40"
+docker exec elusive-lab-wazuh.manager-1 sh -c "tail -n 20 /opt/lab/firewall-state/commands.log"
+docker exec elusive-lab-firewall-1 sh -c "iptables -S LAB_BLOCK; echo '---'; iptables -t nat -S LAB_BLOCK_WEB"
+```
+
+### Ver si una IP concreta sigue bloqueada
+
+Sustituye `172.30.0.20` por la IP del atacante que quieras comprobar:
+
+```powershell
+docker exec elusive-lab-firewall-1 sh -c "iptables -S LAB_BLOCK | grep 172.30.0.20; echo '---'; iptables -S INPUT | grep 172.30.0.20; echo '---'; iptables -t nat -S LAB_BLOCK_WEB | grep 172.30.0.20"
+```
+
+### Comprobar desde el atacante que la web muestra la pagina de bloqueo
+
+```sh
+curl -sv --max-time 5 http://172.31.0.20/ >/tmp/block.out 2>/tmp/block.err
+head -n 6 /tmp/block.out
+cat /tmp/block.err | sed -n '1,18p'
+```
+
+### Comprobar que LDAP y honeypot siguen bloqueados
+
+```sh
+nc -zvw3 172.31.0.30 389
+nc -zvw3 172.31.0.40 2222
 ```
 
 ## Quitar bloqueo
 
+### Deshacer bloqueo manualmente para una IP
+
+Sustituye `172.30.0.20` por la IP que quieras liberar:
+
 ```powershell
-docker exec elusive-lab-firewall-1 sh -c "iptables -D INPUT -s 172.30.0.20 -j DROP; iptables -D FORWARD -s 172.30.0.20 -j DROP"
-docker exec elusive-lab-firewall-1 sh -c "iptables -S"
+docker exec elusive-lab-wazuh.manager-1 sh -c "printf 'delete 172.30.0.20\n' >> /opt/lab/firewall-state/commands.log"
+docker exec elusive-lab-firewall-1 sh -c "iptables -S LAB_BLOCK; echo '---'; iptables -t nat -S LAB_BLOCK_WEB"
+```
+
+### Limpiar una IP manualmente si quieres saltarte la cola
+
+```powershell
+docker exec elusive-lab-firewall-1 sh -c "iptables -D LAB_BLOCK -s 172.30.0.20 -j DROP 2>/dev/null || true; iptables -D INPUT -s 172.30.0.20 -p tcp --dport 8089 -j ACCEPT 2>/dev/null || true; iptables -t nat -D LAB_BLOCK_WEB -s 172.30.0.20 -d 172.31.0.20 -p tcp --dport 80 -j DNAT --to-destination 172.31.0.2:8089 2>/dev/null || true"
+docker exec elusive-lab-firewall-1 sh -c "iptables -S LAB_BLOCK; echo '---'; iptables -t nat -S LAB_BLOCK_WEB"
+```
+
+### Ver el historico de altas y bajas de bloqueo
+
+```powershell
+docker exec elusive-lab-wazuh.manager-1 sh -c "tail -n 30 /opt/lab/firewall-state/commands.log"
 ```
 
 ## Grafana
