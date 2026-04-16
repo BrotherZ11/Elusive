@@ -1,4 +1,6 @@
-FROM kalilinux/kali-rolling:latest
+FROM kasmweb/core-kali-rolling:1.18.0
+
+USER root
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -8,6 +10,7 @@ RUN apt-get update && \
       curl \
       dnsutils \
       ffuf \
+      firefox-esr \
       gobuster \
       hydra \
       iproute2 \
@@ -23,4 +26,3 @@ RUN apt-get update && \
       wget && \
     mkdir -p /run/sshd /var/run/sshd && \
     rm -rf /var/lib/apt/lists/*
-

@@ -14,6 +14,9 @@ docker compose -f docker-compose.lab.yml ps
 - Wazuh: `http://localhost:5602`
 - Grafana: `http://localhost:3001`
 - AgenteIA: `http://localhost:8001`
+- Kali web grupo 1: `https://localhost:6901`
+- Kali web grupo 2: `https://localhost:6902`
+- Kali web grupo 3: `https://localhost:6903`
 
 ## Credenciales
 
