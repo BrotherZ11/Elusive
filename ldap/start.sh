@@ -6,12 +6,16 @@ touch /var/log/ldap/slapd.log /var/log/ldap/events.jsonl
 mkdir -p /tmp/ldap-conn-map
 rm -f /tmp/ldap-conn-map/*
 
-/container/tool/run 2>&1 | while IFS= read -r line; do
-  printf '%s\n' "$line"
-  printf '%s\n' "$line" >> /var/log/ldap/slapd.log
+ /container/tool/run > /var/log/ldap/slapd.log 2>&1 &
 
-  accept_conn="$(printf '%s\n' "$line" | awk '/ACCEPT from IP=/{for (i = 1; i <= NF; i++) if ($i ~ /^conn=/) { sub(/^conn=/, "", $i); print $i; exit }}')"
-  accept_ip="$(printf '%s\n' "$line" | awk '/ACCEPT from IP=/{for (i = 1; i <= NF; i++) if ($i ~ /^IP=/) { sub(/^IP=/, "", $i); sub(/:.*/, "", $i); print $i; exit }}')"
+SLAPD_PID=$!
+
+tail -F /var/log/ldap/slapd.log | while IFS= read -r line; do
+
+  printf '%s\n' "$line"
+
+  accept_conn="$(printf '%s\n' "$line" | awk '/ACCEPT from IP=/{for (i=1;i<=NF;i++) if ($i ~ /^conn=/){sub(/^conn=/,"",$i); print $i; exit}}')"
+  accept_ip="$(printf '%s\n' "$line" | awk '/ACCEPT from IP=/{for (i=1;i<=NF;i++) if ($i ~ /^IP=/){sub(/^IP=/,"",$i); sub(/:.*/,"",$i); print $i; exit}}')"
 
   if [ -n "$accept_conn" ] && [ -n "$accept_ip" ]; then
     printf '%s' "$accept_ip" > "/tmp/ldap-conn-map/$accept_conn"
@@ -28,4 +32,7 @@ rm -f /tmp/ldap-conn-map/*
       fi
     fi
   fi
+
 done
+
+wait $SLAPD_PID
