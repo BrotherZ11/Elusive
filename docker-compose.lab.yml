@@ -235,6 +235,7 @@ services:
       - proxy_logs:/var/log/nginx:ro
       - ips_logs:/var/log/suricata:ro
       - wazuh_logs:/var/log/wazuh:ro
+      - ./firewall/state:/var/log/firewall-state:ro
       - dmz_forwarder_state:/var/fluent-bit/state
     restart: unless-stopped
     networks:
@@ -308,8 +309,8 @@ services:
         hard: 655360
     environment:
       INDEXER_URL: https://wazuh.indexer:9200
-      INDEXER_USERNAME: HomerCison
-      INDEXER_PASSWORD: ManoloGonorrea67%
+      INDEXER_USERNAME: admin
+      INDEXER_PASSWORD: SecretPassword
       FILEBEAT_SSL_VERIFICATION_MODE: full
       SSL_CERTIFICATE_AUTHORITIES: /etc/ssl/root-ca.pem
       SSL_CERTIFICATE: /etc/ssl/filebeat.pem
@@ -381,8 +382,8 @@ services:
     depends_on:
       - wazuh.indexer
     environment:
-      INDEXER_USERNAME: HomerCison
-      INDEXER_PASSWORD: ManoloGonorrea67%
+      INDEXER_USERNAME: admin
+      INDEXER_PASSWORD: SecretPassword
       WAZUH_API_URL: https://wazuh.manager
       DASHBOARD_USERNAME: kibanaserver
       DASHBOARD_PASSWORD: kibanaserver
@@ -572,8 +573,8 @@ services:
         mkdir -p /var/log/endpoint
         i=0
         while true; do
-          i=$((i+1))
-          printf "%s workstation01 systemd[1]: Session heartbeat user=analyst app=browser seq=%s\n" "$(date -u '+%b %d %H:%M:%S')" "$i" >> /var/log/endpoint/activity.log
+          i=$$((i+1))
+          printf "%s workstation01 systemd[1]: Session heartbeat user=analyst app=browser seq=%s\n" "$(date -u '+%b %d %H:%M:%S')" "$$i" >> /var/log/endpoint/activity.log
           sleep 25
         done
     restart: unless-stopped
@@ -594,8 +595,8 @@ services:
         mkdir -p /var/log/endpoint
         i=0
         while true; do
-          i=$((i+1))
-          printf "%s mobile01 android-telemetry: device=android user=field-tech event=sync status=ok seq=%s\n" "$(date -u '+%b %d %H:%M:%S')" "$i" >> /var/log/endpoint/activity.log
+          i=$$((i+1))
+          printf "%s mobile01 android-telemetry: device=android user=field-tech event=sync status=ok seq=%s\n" "$(date -u '+%b %d %H:%M:%S')" "$$i" >> /var/log/endpoint/activity.log
           sleep 30
         done
     restart: unless-stopped
@@ -616,8 +617,8 @@ services:
         mkdir -p /var/log/endpoint
         i=0
         while true; do
-          i=$((i+1))
-          printf "%s mobile02 ios-telemetry: device=ios user=ops-manager event=mail-check status=ok seq=%s\n" "$(date -u '+%b %d %H:%M:%S')" "$i" >> /var/log/endpoint/activity.log
+          i=$$((i+1))
+          printf "%s mobile02 ios-telemetry: device=ios user=ops-manager event=mail-check status=ok seq=%s\n" "$(date -u '+%b %d %H:%M:%S')" "$$i" >> /var/log/endpoint/activity.log
           sleep 35
         done
     restart: unless-stopped

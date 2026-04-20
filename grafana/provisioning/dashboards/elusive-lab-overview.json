@@ -274,12 +274,12 @@
         {
           "datasource": "Loki",
           "editorMode": "code",
-          "expr": "count(count by (srcip) (count_over_time({job=\"dmz-forwarder\", tag=\"dmz.wazuh\"} | json rule_id=\"rule.id\", srcip=\"data.srcip\" | rule_id=\"651\" [1h])))",
+          "expr": "sum(count_over_time({job=\"dmz-forwarder\", tag=\"dmz.firewall.commands\"} |= \"add \" [1h]))",
           "queryType": "instant",
           "refId": "A"
         }
       ],
-      "title": "Blocked Source IPs 1h",
+      "title": "Block Commands 1h",
       "type": "stat"
     },
     {
@@ -451,12 +451,12 @@
         {
           "datasource": "Loki",
           "editorMode": "code",
-          "expr": "{job=\"dmz-forwarder\", tag=\"dmz.wazuh\"} | json rule_id=\"rule.id\", description=\"rule.description\", srcip=\"data.srcip\" | rule_id=~\"651|652\" | line_format \"{{.srcip}} {{.rule_id}} {{.description}}\"",
+          "expr": "{job=\"dmz-forwarder\", tag=\"dmz.firewall.commands\"}",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "Blocked IP Activity",
+      "title": "Firewall Block Commands",
       "type": "logs"
     },
     {
@@ -512,6 +512,6 @@
   "timezone": "",
   "title": "Elusive Lab Overview",
   "uid": "elusive-lab",
-  "version": 3,
+  "version": 4,
   "weekStart": ""
 }
